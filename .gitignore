@@ -1,0 +1,59 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+.eggs/
+*.egg-info/
+*.egg
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Database and local data (keep DB out of repo)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/data/
+data/
+
+# Generated assets (optional: remove if you want to track sample outputs)
+backend/data/scad/
+backend/data/stl/
+backend/data/imports/
+
+# IDE and OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Build / deploy
+.netlify/

@@ -1,0 +1,101 @@
+export type ProductStatus =
+  | 'research_only'
+  | 'scored'
+  | 'cad_generated'
+  | 'manufacturing_simulated'
+  | 'listing_generated'
+  | 'prototype_candidate'
+  | 'archived'
+
+export interface ResearchDataSummary {
+  id: number
+  listed_price: number | null
+  review_count: number | null
+  rating: number | null
+  estimated_sales: number | null
+  competitor_count: number | null
+}
+
+export interface OpportunityScoreSummary {
+  id: number
+  total_score: number
+  demand_score: number
+  competition_score: number
+  manufacturing_score: number
+  margin_score: number
+  differentiation_score: number
+  scored_at: string
+}
+
+export interface Product {
+  id: number
+  name: string
+  slug: string
+  category: string
+  source: string
+  source_keyword: string | null
+  source_notes: string | null
+  status: ProductStatus
+  created_at: string
+  updated_at: string
+  research_data: ResearchDataSummary[]
+  latest_opportunity_score: OpportunityScoreSummary | null
+}
+
+export interface ProductListItem {
+  id: number
+  name: string
+  slug: string
+  category: string
+  source: string
+  status: ProductStatus
+  created_at: string
+  updated_at: string
+  opportunity_score: number | null
+  estimated_price: number | null
+  competition_level: string | null
+  manufacturing_difficulty: string | null
+  profit_margin_estimate: number | null
+}
+
+export interface PipelineStageCounts {
+  research_only: number
+  scored: number
+  cad_generated: number
+  manufacturing_simulated: number
+  listing_generated: number
+  prototype_candidate: number
+  archived: number
+}
+
+export interface TopOpportunitySummary {
+  id: number
+  name: string
+  slug: string
+  total_score: number
+  category: string
+}
+
+export interface RecentActivityItem {
+  id: number
+  name: string
+  slug: string
+  type: string
+  at: string
+}
+
+export interface DashboardSummary {
+  total_products: number
+  average_opportunity_score: number | null
+  average_estimated_margin: number | null
+  average_estimated_print_time_minutes: number | null
+  pipeline_stage_counts: PipelineStageCounts
+  top_opportunities: TopOpportunitySummary[]
+  top_opportunity: TopOpportunitySummary | null
+  fastest_to_manufacture: TopOpportunitySummary | null
+  highest_margin: TopOpportunitySummary | null
+  most_differentiable: TopOpportunitySummary | null
+  recent_imports: RecentActivityItem[]
+  recent_cad_generations: RecentActivityItem[]
+  recent_listing_generations: RecentActivityItem[]
+}

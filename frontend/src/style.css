@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --forge-bg: #0c0f14;
+  --forge-surface: #141922;
+  --forge-border: #1e2633;
+  --forge-muted: #6b7280;
+  --forge-accent: #3b82f6;
+  --forge-accent-hover: #2563eb;
+  --forge-success: #22c55e;
+  --forge-warning: #eab308;
+  --forge-text: #f1f5f9;
+  --forge-text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: var(--forge-bg);
+  color: var(--forge-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--forge-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--forge-accent-hover);
+  text-decoration: underline;
+}
