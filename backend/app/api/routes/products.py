@@ -7,6 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.core.database import get_db
 from app.models import Product, OpportunityScore, ResearchData
 from app.models.product import ProductStatus, slugify
+from app.services.scoring_service import (
+    compute_opportunity_score,
+    ScoreInputs,
+)
 from app.schemas.product import (
     ProductCreate,
     ProductUpdate,
@@ -15,6 +19,7 @@ from app.schemas.product import (
     ResearchDataSummary,
     OpportunityScoreSummary,
 )
+from app.schemas.research_data import ResearchDataCreate, ResearchDataResponse
 
 router = APIRouter()
 
@@ -293,6 +298,114 @@ async def update_product(
         )
         if latest_score
         else None,
+    )
+
+
+@router.post("/{product_id}/score", response_model=OpportunityScoreSummary)
+async def score_product(
+    product_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> OpportunityScoreSummary:
+    """Compute and save ForgeFlow Opportunity Score for a product from its research data."""
+    result = await db.execute(
+        select(Product)
+        .where(Product.id == product_id)
+        .options(
+            selectinload(Product.research_data),
+            selectinload(Product.opportunity_scores),
+        )
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Use latest research row (or first)
+    research = product.research_data[0] if product.research_data else None
+    if not research:
+        raise HTTPException(
+            status_code=400,
+            detail="Product has no research data. Add research data before scoring.",
+        )
+
+    inputs = ScoreInputs(
+        listed_price=research.listed_price,
+        review_count=research.review_count,
+        rating=research.rating,
+        estimated_sales=research.estimated_sales,
+        competitor_count=research.competitor_count,
+        listing_count=research.listing_count,
+        listing_age_days=research.listing_age_days,
+    )
+    score_result = compute_opportunity_score(inputs)
+
+    new_score = OpportunityScore(
+        product_id=product.id,
+        demand_score=score_result.demand_score,
+        competition_score=score_result.competition_score,
+        manufacturing_score=score_result.manufacturing_score,
+        margin_score=score_result.margin_score,
+        differentiation_score=score_result.differentiation_score,
+        total_score=score_result.total_score,
+        scoring_notes=score_result.scoring_notes,
+    )
+    db.add(new_score)
+    product.status = ProductStatus.SCORED
+    await db.flush()
+    await db.refresh(new_score)
+
+    return OpportunityScoreSummary(
+        id=new_score.id,
+        total_score=new_score.total_score,
+        demand_score=new_score.demand_score,
+        competition_score=new_score.competition_score,
+        manufacturing_score=new_score.manufacturing_score,
+        margin_score=new_score.margin_score,
+        differentiation_score=new_score.differentiation_score,
+        scored_at=new_score.scored_at,
+    )
+
+
+@router.post("/{product_id}/research", response_model=ResearchDataResponse, status_code=201)
+async def add_research_data(
+    product_id: int,
+    payload: ResearchDataCreate,
+    db: AsyncSession = Depends(get_db),
+) -> ResearchDataResponse:
+    """Add research data to a product. product_id in URL overrides body."""
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    research = ResearchData(
+        product_id=product_id,
+        source_type=payload.source_type,
+        keyword=payload.keyword,
+        listed_price=payload.listed_price,
+        review_count=payload.review_count,
+        rating=payload.rating,
+        estimated_sales=payload.estimated_sales,
+        competitor_count=payload.competitor_count,
+        listing_count=payload.listing_count,
+        listing_age_days=payload.listing_age_days,
+        notes=payload.notes,
+    )
+    db.add(research)
+    await db.flush()
+    await db.refresh(research)
+    return ResearchDataResponse(
+        id=research.id,
+        product_id=research.product_id,
+        source_type=research.source_type,
+        keyword=research.keyword,
+        listed_price=research.listed_price,
+        review_count=research.review_count,
+        rating=research.rating,
+        estimated_sales=research.estimated_sales,
+        competitor_count=research.competitor_count,
+        listing_count=research.listing_count,
+        listing_age_days=research.listing_age_days,
+        notes=research.notes,
+        imported_at=research.imported_at,
     )
 
 

@@ -1,7 +1,89 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../services/api'
-import type { Product } from '../types'
+import type { Product, ResearchDataCreate } from '../types'
+
+function ResearchForm({
+  productId,
+  onSaved,
+  onCancel,
+  saving,
+  setSaving,
+}: {
+  productId: number
+  onSaved: () => void
+  onCancel: () => void
+  saving: boolean
+  setSaving: (v: boolean) => void
+}) {
+  const [form, setForm] = useState<ResearchDataCreate>({
+    source_type: 'manual',
+    listed_price: null,
+    review_count: null,
+    rating: null,
+    estimated_sales: null,
+    competitor_count: null,
+    listing_count: null,
+    listing_age_days: null,
+    notes: null,
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      await api.products.addResearch(productId, form)
+      onSaved()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 p-3 rounded border border-[var(--forge-border)] space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Listed price"
+          value={form.listed_price ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, listed_price: e.target.value ? parseFloat(e.target.value) : null }))}
+          className="px-2 py-1 rounded border border-[var(--forge-border)] bg-[var(--forge-bg)] text-sm"
+        />
+        <input
+          type="number"
+          placeholder="Review count"
+          value={form.review_count ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, review_count: e.target.value ? parseInt(e.target.value, 10) : null }))}
+          className="px-2 py-1 rounded border border-[var(--forge-border)] bg-[var(--forge-bg)] text-sm"
+        />
+        <input
+          type="number"
+          step="0.1"
+          placeholder="Rating"
+          value={form.rating ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, rating: e.target.value ? parseFloat(e.target.value) : null }))}
+          className="px-2 py-1 rounded border border-[var(--forge-border)] bg-[var(--forge-bg)] text-sm"
+        />
+        <input
+          type="number"
+          placeholder="Competitors"
+          value={form.competitor_count ?? ''}
+          onChange={(e) => setForm((f) => ({ ...f, competitor_count: e.target.value ? parseInt(e.target.value, 10) : null }))}
+          className="px-2 py-1 rounded border border-[var(--forge-border)] bg-[var(--forge-bg)] text-sm"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="px-3 py-1 rounded bg-[var(--forge-accent)] text-white text-sm disabled:opacity-50">
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+        <button type="button" onClick={onCancel} className="px-3 py-1 rounded border border-[var(--forge-border)] text-sm">
+          Cancel
+        </button>
+      </div>
+    </form>
+  )
+}
 
 const statusLabel: Record<string, string> = {
   research_only: 'Research only',
@@ -18,6 +100,14 @@ export function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [scoreLoading, setScoreLoading] = useState(false)
+  const [researchFormOpen, setResearchFormOpen] = useState(false)
+  const [researchSaving, setResearchSaving] = useState(false)
+
+  const refresh = () => {
+    if (!idOrSlug) return
+    api.products.get(idOrSlug).then(setProduct).catch((e) => setError(e.message))
+  }
 
   useEffect(() => {
     if (!idOrSlug) return
@@ -63,7 +153,27 @@ export function ProductDetail() {
             {product.category} · {statusLabel[product.status] ?? product.status}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={scoreLoading || !product.research_data.length}
+            onClick={async () => {
+              if (!product?.id) return
+              setScoreLoading(true)
+              setError(null)
+              try {
+                await api.products.score(product.id)
+                refresh()
+              } catch (e) {
+                setError(e instanceof Error ? e.message : 'Score failed')
+              } finally {
+                setScoreLoading(false)
+              }
+            }}
+            className="px-4 py-2 rounded-md border border-[var(--forge-accent)] bg-[var(--forge-accent)]/20 text-[var(--forge-accent)] text-sm font-medium hover:bg-[var(--forge-accent)]/30 disabled:opacity-50"
+          >
+            {scoreLoading ? 'Scoring…' : 'Score opportunity'}
+          </button>
           <button
             type="button"
             className="px-4 py-2 rounded-md border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)] text-sm font-medium hover:bg-[var(--forge-border)]"
@@ -139,6 +249,22 @@ export function ProductDetail() {
               </div>
             ) : (
               <p className="text-sm text-[var(--forge-text-muted)]">No research data yet.</p>
+            )}
+            <button
+              type="button"
+              onClick={() => setResearchFormOpen(!researchFormOpen)}
+              className="mt-3 text-sm text-[var(--forge-accent)] hover:underline"
+            >
+              {researchFormOpen ? 'Cancel' : 'Add research data'}
+            </button>
+            {researchFormOpen && (
+              <ResearchForm
+                productId={product.id}
+                onSaved={() => { setResearchFormOpen(false); refresh() }}
+                onCancel={() => setResearchFormOpen(false)}
+                saving={researchSaving}
+                setSaving={setResearchSaving}
+              />
             )}
           </section>
         </div>

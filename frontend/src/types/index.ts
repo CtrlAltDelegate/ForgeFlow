@@ -99,3 +99,76 @@ export interface DashboardSummary {
   recent_cad_generations: RecentActivityItem[]
   recent_listing_generations: RecentActivityItem[]
 }
+
+export interface ProductCreate {
+  name: string
+  category: string
+  source?: string
+  source_keyword?: string | null
+  source_notes?: string | null
+  status?: ProductStatus
+}
+
+export interface ProductUpdate {
+  name?: string
+  category?: string
+  source?: string
+  source_keyword?: string | null
+  source_notes?: string | null
+  status?: ProductStatus
+}
+
+export interface ResearchDataCreate {
+  source_type?: string
+  keyword?: string | null
+  listed_price?: number | null
+  review_count?: number | null
+  rating?: number | null
+  estimated_sales?: number | null
+  competitor_count?: number | null
+  listing_count?: number | null
+  listing_age_days?: number | null
+  notes?: string | null
+}
+
+export interface ResearchDataResponse {
+  id: number
+  product_id: number
+  source_type: string
+  keyword: string | null
+  listed_price: number | null
+  review_count: number | null
+  rating: number | null
+  estimated_sales: number | null
+  competitor_count: number | null
+  listing_count: number | null
+  listing_age_days: number | null
+  notes: string | null
+  imported_at: string
+}
+
+export interface ImportRecordResponse {
+  id: number
+  file_name: string | null
+  source_type: string
+  record_count: number
+  status: string
+  notes: string | null
+  imported_at: string
+}
+
+export interface ImportListItem {
+  id: number
+  file_name: string | null
+  source_type: string
+  record_count: number
+  status: string
+  imported_at: string
+}
+
+export interface CsvPreviewResponse {
+  valid: boolean
+  row_count: number
+  errors: { row: number; message: string }[]
+  preview: { name: string; category: string; source: string; listed_price: number | null; review_count: number | null; rating: number | null; estimated_sales: number | null; competitor_count: number | null }[]
+}

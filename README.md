@@ -64,23 +64,32 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ### CSV template (Data Imports)
 
-- The **Data Imports** page and CSV template will be added in Phase 2. For now, use the seeded demo data or create products via the API.
+- Use the **Data Imports** page: download the CSV template, fill it, then upload. Or add products manually (form on Data Imports or “Add product” on Opportunities).
 
 ---
 
-## What’s implemented (Phase 1)
+## What’s implemented
+
+### Phase 1
 
 - **Backend**: FastAPI, SQLite, SQLAlchemy models (products, research_data, opportunity_scores, cad_models, manufacturing_simulations, listings, imports, product_notes).
 - **API**: Dashboard summary, list products (filter/sort), get product by ID/slug.
-- **Seed data**: 12 demo products across categories (cable organizers, vacuum adapters, pegboard mounts, desk accessories, gaming, appliance parts, etc.) with research data and opportunity scores.
-- **Frontend**: Dark “mission control” dashboard with sidebar; Dashboard (metrics, pipeline stages, top opportunities, recent activity); Opportunities table (search, category, status, sort); Product Detail (overview, research, opportunity score breakdown, placeholders for CAD / simulation / listing).
+- **Seed data**: 12 demo products with research data and opportunity scores.
+- **Frontend**: Dashboard, Opportunities table, Product Detail (overview, research, score breakdown).
+
+### Phase 2
+
+- **Scoring engine**: `app/services/scoring_service.py` computes ForgeFlow Opportunity Score (demand, competition, manufacturing, margin, differentiation) from research data. Weights configurable; defaults 30% demand, 20% competition, 20% manufacturing, 20% margin, 10% differentiation.
+- **API**: `POST /api/products/{id}/score` to compute and save score; `POST /api/products/{id}/research` to add research data; full CRUD for products. Imports: `GET /api/imports/template`, `POST /api/imports/preview`, `POST /api/imports/upload`, `GET /api/imports`.
+- **CSV import**: Parse and validate CSV (name, category, optional research columns), create products + research rows, log to `imports` table. Template download on Data Imports page.
+- **Frontend**: Data Imports page (CSV upload, preview, template download, manual entry form, import history). Opportunities: “Add product” → Product Create form. Product Detail: “Score opportunity” button, “Add research data” form.
 
 ---
 
 ## What’s mocked vs live
 
-- **Live**: Database, product CRUD, dashboard aggregation, opportunity scores (stored from seed or future scoring engine).
-- **Mocked / placeholder**: CAD generation, manufacturing simulation, listing generation, CSV import UI. These are scaffolded for later phases.
+- **Live**: Database, product CRUD, research data CRUD, opportunity scoring (computed from research), CSV import, dashboard aggregation.
+- **Mocked / placeholder**: CAD generation, manufacturing simulation, listing generation. These are scaffolded for Phase 3–4.
 
 ---
 

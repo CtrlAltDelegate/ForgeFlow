@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import type { ProductListItem } from '../types'
 
@@ -14,6 +14,7 @@ const statusLabel: Record<string, string> = {
 }
 
 export function Opportunities() {
+  const navigate = useNavigate()
   const [products, setProducts] = useState<ProductListItem[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,11 +58,20 @@ export function Opportunities() {
 
   return (
     <div className="p-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-[var(--forge-text)]">Opportunities</h1>
-        <p className="text-[var(--forge-text-muted)] mt-1">
-          Compare and filter product candidates
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-[var(--forge-text)]">Opportunities</h1>
+          <p className="text-[var(--forge-text-muted)] mt-1">
+            Compare and filter product candidates
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/product/new')}
+          className="px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium hover:opacity-90"
+        >
+          Add product
+        </button>
       </header>
 
       <div className="flex flex-wrap gap-3 mb-6">

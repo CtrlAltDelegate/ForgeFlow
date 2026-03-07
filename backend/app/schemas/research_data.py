@@ -17,7 +17,7 @@ class ResearchDataBase(BaseModel):
 
 
 class ResearchDataCreate(ResearchDataBase):
-    product_id: int
+    product_id: int | None = None  # optional when passed in URL
 
 
 class ResearchDataResponse(ResearchDataBase):

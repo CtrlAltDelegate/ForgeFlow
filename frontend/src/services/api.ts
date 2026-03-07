@@ -1,13 +1,15 @@
 const API_BASE = '/api'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  })
+  const headers: HeadersInit = { ...options?.headers }
+  if (!(options?.body instanceof FormData)) {
+    (headers as Record<string, string>)['Content-Type'] = 'application/json'
+  }
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
-    throw new Error(err.detail || res.statusText)
+    const msg = typeof err.detail === 'string' ? err.detail : err.detail?.message || JSON.stringify(err.detail)
+    throw new Error(msg)
   }
   if (res.status === 204) return undefined as T
   return res.json()
@@ -41,5 +43,42 @@ export const api = {
     categories: () => request<string[]>('/products/categories'),
     get: (idOrSlug: string) =>
       request<import('../types').Product>(`/products/${encodeURIComponent(idOrSlug)}`),
+    create: (body: import('../types').ProductCreate) =>
+      request<import('../types').Product>('/products', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id: number, body: import('../types').ProductUpdate) =>
+      request<import('../types').Product>(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    delete: (id: number) =>
+      request<void>(`/products/${id}`, { method: 'DELETE' }),
+    score: (id: number) =>
+      request<import('../types').OpportunityScoreSummary>(`/products/${id}/score`, { method: 'POST' }),
+    addResearch: (productId: number, body: import('../types').ResearchDataCreate) =>
+      request<import('../types').ResearchDataResponse>(`/products/${productId}/research`, { method: 'POST', body: JSON.stringify(body) }),
+  },
+  imports: {
+    list: () => request<import('../types').ImportListItem[]>('/imports'),
+    get: (id: number) => request<import('../types').ImportRecordResponse>(`/imports/${id}`),
+    template: () => fetch(`${API_BASE}/imports/template`).then(r => r.text()),
+    preview: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return fetch(`${API_BASE}/imports/preview`, { method: 'POST', body: fd }).then(async res => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.detail?.message || err.detail || res.statusText)
+        }
+        return res.json() as Promise<import('../types').CsvPreviewResponse>
+      })
+    },
+    upload: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return fetch(`${API_BASE}/imports/upload`, { method: 'POST', body: fd }).then(async res => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.detail?.message || (typeof err.detail === 'object' && err.detail?.errors ? err.detail.errors.map((e: { row: number; message: string }) => `Row ${e.row}: ${e.message}`).join('; ') : undefined) || JSON.stringify(err.detail))
+        }
+        return res.json() as Promise<import('../types').ImportRecordResponse>
+      })
+    },
   },
 }
