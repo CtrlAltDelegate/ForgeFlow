@@ -6,6 +6,7 @@ import { ProductDetail } from './pages/ProductDetail'
 import { Placeholder } from './pages/Placeholder'
 import { DataImports } from './pages/DataImports'
 import { ProductCreate } from './pages/ProductCreate'
+import { CadGenerator } from './pages/CadGenerator'
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
         <Route path="opportunities" element={<Opportunities />} />
         <Route path="product/new" element={<ProductCreate />} />
         <Route path="product/:idOrSlug" element={<ProductDetail />} />
-        <Route path="cad" element={<Placeholder />} />
+        <Route path="cad" element={<CadGenerator />} />
         <Route path="simulator" element={<Placeholder />} />
         <Route path="listings" element={<Placeholder />} />
         <Route path="imports" element={<DataImports />} />

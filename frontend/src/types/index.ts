@@ -172,3 +172,27 @@ export interface CsvPreviewResponse {
   errors: { row: number; message: string }[]
   preview: { name: string; category: string; source: string; listed_price: number | null; review_count: number | null; rating: number | null; estimated_sales: number | null; competitor_count: number | null }[]
 }
+
+export interface CadModelResponse {
+  id: number
+  product_id: number
+  version: number
+  model_type: string
+  parameters_json: string | null
+  scad_code: string | null
+  scad_file_path: string | null
+  stl_file_path: string | null
+  generation_method: string
+  created_at: string
+}
+
+export interface CadCreate {
+  model_type: string
+  parameters?: Record<string, number>
+}
+
+export interface CadExportResult {
+  success: boolean
+  message: string
+  stl_file_path?: string | null
+}

@@ -84,12 +84,18 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 - **CSV import**: Parse and validate CSV (name, category, optional research columns), create products + research rows, log to `imports` table. Template download on Data Imports page.
 - **Frontend**: Data Imports page (CSV upload, preview, template download, manual entry form, import history). Opportunities: “Add product” → Product Create form. Product Detail: “Score opportunity” button, “Add research data” form.
 
+### Phase 3 (CAD)
+
+- **CAD service** (`app/services/cad_service.py`): Template-based OpenSCAD code generation for **bracket**, **clip**, **holder**, **spacer**, **mount**, **tray**, **cable_organizer**. Each template accepts dimensions (width, height, thickness, hole_diameter, etc.). Saves `.scad` files under `data/scad/` and records paths + code in DB. **OpenSCAD CLI** integration: runs `openscad -o output.stl input.scad` for STL export (set `FORGEFLOW_OPENSCAD_PATH` if not on PATH).
+- **API**: `GET /api/products/model-types`, `GET/POST /api/products/{id}/cad`, `GET /api/products/{id}/cad/{cad_id}`, `POST /api/products/{id}/cad/{cad_id}/export-stl`.
+- **Frontend**: **CAD Generator** page (`/cad`): product selector, template type, parameter inputs (mm), “Generate & save”, generated code view, list of saved models per product, “Export STL” per model, activity log. Product Detail “Generate CAD” links to `/cad?product={slug}`.
+
 ---
 
 ## What’s mocked vs live
 
-- **Live**: Database, product CRUD, research data CRUD, opportunity scoring (computed from research), CSV import, dashboard aggregation.
-- **Mocked / placeholder**: CAD generation, manufacturing simulation, listing generation. These are scaffolded for Phase 3–4.
+- **Live**: Database, product CRUD, research data CRUD, opportunity scoring, CSV import, dashboard aggregation, **CAD template generation**, **SCAD file save**, **STL export via OpenSCAD CLI** (when installed).
+- **Mocked / placeholder**: Manufacturing simulation, listing generation (Phase 4). OpenSCAD is optional: if not installed, “Export STL” returns a clear error; generation and save still work.
 
 ---
 

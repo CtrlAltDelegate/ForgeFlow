@@ -54,6 +54,17 @@ export const api = {
     addResearch: (productId: number, body: import('../types').ResearchDataCreate) =>
       request<import('../types').ResearchDataResponse>(`/products/${productId}/research`, { method: 'POST', body: JSON.stringify(body) }),
   },
+  cad: {
+    modelTypes: () => request<string[]>('/products/model-types'),
+    list: (productId: number) =>
+      request<import('../types').CadModelResponse[]>(`/products/${productId}/cad`),
+    create: (productId: number, body: import('../types').CadCreate) =>
+      request<import('../types').CadModelResponse>(`/products/${productId}/cad`, { method: 'POST', body: JSON.stringify(body) }),
+    get: (productId: number, cadId: number) =>
+      request<import('../types').CadModelResponse>(`/products/${productId}/cad/${cadId}`),
+    exportStl: (productId: number, cadId: number) =>
+      request<import('../types').CadExportResult>(`/products/${productId}/cad/${cadId}/export-stl`, { method: 'POST' }),
+  },
   imports: {
     list: () => request<import('../types').ImportListItem[]>('/imports'),
     get: (id: number) => request<import('../types').ImportRecordResponse>(`/imports/${id}`),

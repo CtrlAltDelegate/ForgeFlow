@@ -174,12 +174,12 @@ export function ProductDetail() {
           >
             {scoreLoading ? 'Scoring…' : 'Score opportunity'}
           </button>
-          <button
-            type="button"
+          <Link
+            to={`/cad?product=${encodeURIComponent(product.slug)}`}
             className="px-4 py-2 rounded-md border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)] text-sm font-medium hover:bg-[var(--forge-border)]"
           >
             Generate CAD
-          </button>
+          </Link>
           <button
             type="button"
             className="px-4 py-2 rounded-md border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)] text-sm font-medium hover:bg-[var(--forge-border)]"
