@@ -57,3 +57,13 @@ logs/
 
 # Build / deploy
 .netlify/
+
+# Stray root-level frontend dupes (keep frontend/ only)
+/index.html
+/package.json
+/package-lock.json
+/tsconfig.json
+/vite.config.ts
+/src/
+/public/
+/dist/
