@@ -7,6 +7,8 @@ import { Placeholder } from './pages/Placeholder'
 import { DataImports } from './pages/DataImports'
 import { ProductCreate } from './pages/ProductCreate'
 import { CadGenerator } from './pages/CadGenerator'
+import { ManufacturingSimulator } from './pages/ManufacturingSimulator'
+import { ListingStudio } from './pages/ListingStudio'
 
 function App() {
   return (
@@ -17,8 +19,8 @@ function App() {
         <Route path="product/new" element={<ProductCreate />} />
         <Route path="product/:idOrSlug" element={<ProductDetail />} />
         <Route path="cad" element={<CadGenerator />} />
-        <Route path="simulator" element={<Placeholder />} />
-        <Route path="listings" element={<Placeholder />} />
+        <Route path="simulator" element={<ManufacturingSimulator />} />
+        <Route path="listings" element={<ListingStudio />} />
         <Route path="imports" element={<DataImports />} />
         <Route path="settings" element={<Placeholder />} />
         <Route path="*" element={<Navigate to="/" replace />} />

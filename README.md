@@ -90,12 +90,20 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 - **API**: `GET /api/products/model-types`, `GET/POST /api/products/{id}/cad`, `GET /api/products/{id}/cad/{cad_id}`, `POST /api/products/{id}/cad/{cad_id}/export-stl`.
 - **Frontend**: **CAD Generator** page (`/cad`): product selector, template type, parameter inputs (mm), “Generate & save”, generated code view, list of saved models per product, “Export STL” per model, activity log. Product Detail “Generate CAD” links to `/cad?product={slug}`.
 
+### Phase 4 (Manufacturing + Listings)
+
+- **Manufacturing simulation** (`app/services/simulation_service.py`): **Heuristic engine** estimates print time (min), material (g), filament cost, supports (yes/no), recommended orientation, and difficulty score (0–100) from part volume (from CAD parameters or default) and material/layer height/infill. Designed so a future **slicer CLI** (OrcaSlicer, Bambu Studio) can be plugged in without changing API or UI. **Warnings** for long print time, supports, large part, or high material cost.
+- **API**: `GET/POST /api/products/{id}/simulations`, `GET /api/products/{id}/simulations/{sim_id}`.
+- **Listing generation** (`app/services/listing_service.py`): **Template-based** marketplace content: title, short pitch, 3–5 bullet points, description, 10–15 tags, suggested price (from research or default), photo prompt, “why it could sell”, differentiation angle. AI-ready for future LLM swap.
+- **API**: `GET/POST /api/products/{id}/listings`, `GET/PATCH /api/products/{id}/listings/{listing_id}`.
+- **Frontend**: **Manufacturing Simulator** (`/simulator`): product + optional CAD model, material/layer height/infill/nozzle, “Run simulation”, result card + warnings, history. **Listing Studio** (`/listings`): product selector, “Generate listing”, view title/pitch/bullets/description/price/tags/photo prompt/why it could sell/differentiation, version switcher. Product Detail “Run simulation” and “Generate listing” link to these pages with `?product={slug}`.
+
 ---
 
 ## What’s mocked vs live
 
-- **Live**: Database, product CRUD, research data CRUD, opportunity scoring, CSV import, dashboard aggregation, **CAD template generation**, **SCAD file save**, **STL export via OpenSCAD CLI** (when installed).
-- **Mocked / placeholder**: Manufacturing simulation, listing generation (Phase 4). OpenSCAD is optional: if not installed, “Export STL” returns a clear error; generation and save still work.
+- **Live**: Full pipeline: database, product/research CRUD, opportunity scoring, CSV import, dashboard, **CAD** (templates + SCAD save + optional OpenSCAD STL), **manufacturing simulation** (heuristic), **listing generation** (templates), all UI pages.
+- **Optional / future**: OpenSCAD CLI (STL export). Slicer CLI (replace heuristic with real slicer). LLM provider (replace template listing with AI-generated copy).
 
 ---
 

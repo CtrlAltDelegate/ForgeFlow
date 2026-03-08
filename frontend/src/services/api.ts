@@ -65,6 +65,24 @@ export const api = {
     exportStl: (productId: number, cadId: number) =>
       request<import('../types').CadExportResult>(`/products/${productId}/cad/${cadId}/export-stl`, { method: 'POST' }),
   },
+  simulation: {
+    list: (productId: number) =>
+      request<import('../types').SimulationResponse[]>(`/products/${productId}/simulations`),
+    create: (productId: number, body: import('../types').SimulationCreate) =>
+      request<import('../types').SimulationResultWithWarnings>(`/products/${productId}/simulations`, { method: 'POST', body: JSON.stringify(body) }),
+    get: (productId: number, simulationId: number) =>
+      request<import('../types').SimulationResponse>(`/products/${productId}/simulations/${simulationId}`),
+  },
+  listings: {
+    list: (productId: number) =>
+      request<import('../types').ListingResponse[]>(`/products/${productId}/listings`),
+    create: (productId: number) =>
+      request<import('../types').ListingResponse>(`/products/${productId}/listings`, { method: 'POST' }),
+    get: (productId: number, listingId: number) =>
+      request<import('../types').ListingResponse>(`/products/${productId}/listings/${listingId}`),
+    update: (productId: number, listingId: number, body: import('../types').ListingUpdate) =>
+      request<import('../types').ListingResponse>(`/products/${productId}/listings/${listingId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  },
   imports: {
     list: () => request<import('../types').ImportListItem[]>('/imports'),
     get: (id: number) => request<import('../types').ImportRecordResponse>(`/imports/${id}`),

@@ -180,18 +180,18 @@ export function ProductDetail() {
           >
             Generate CAD
           </Link>
-          <button
-            type="button"
+          <Link
+            to={`/simulator?product=${encodeURIComponent(product.slug)}`}
             className="px-4 py-2 rounded-md border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)] text-sm font-medium hover:bg-[var(--forge-border)]"
           >
             Run simulation
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            to={`/listings?product=${encodeURIComponent(product.slug)}`}
             className="px-4 py-2 rounded-md border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)] text-sm font-medium hover:bg-[var(--forge-border)]"
           >
             Generate listing
-          </button>
+          </Link>
           <button
             type="button"
             className="px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium hover:opacity-90"

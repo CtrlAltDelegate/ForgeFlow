@@ -196,3 +196,62 @@ export interface CadExportResult {
   message: string
   stl_file_path?: string | null
 }
+
+export interface SimulationCreate {
+  cad_model_id?: number | null
+  material_type?: string
+  layer_height?: number
+  infill?: number
+  nozzle_size?: number
+}
+
+export interface SimulationResponse {
+  id: number
+  product_id: number
+  cad_model_id: number | null
+  material_type: string
+  layer_height: number
+  infill: number
+  nozzle_size: number
+  estimated_print_time_minutes: number | null
+  estimated_material_grams: number | null
+  estimated_filament_cost: number | null
+  supports_required: boolean
+  recommended_orientation: string | null
+  difficulty_score: number | null
+  notes: string | null
+  simulated_at: string
+}
+
+export interface SimulationResultWithWarnings {
+  simulation: SimulationResponse
+  warnings: string[]
+}
+
+export interface ListingResponse {
+  id: number
+  product_id: number
+  version: number
+  title: string | null
+  short_pitch: string | null
+  bullet_points_json: string | null
+  description: string | null
+  tags_json: string | null
+  suggested_price: number | null
+  photo_prompt: string | null
+  why_it_could_sell: string | null
+  differentiation_angle: string | null
+  created_at: string
+}
+
+export interface ListingUpdate {
+  title?: string | null
+  short_pitch?: string | null
+  bullet_points_json?: string | null
+  description?: string | null
+  tags_json?: string | null
+  suggested_price?: number | null
+  photo_prompt?: string | null
+  why_it_could_sell?: string | null
+  differentiation_angle?: string | null
+}
