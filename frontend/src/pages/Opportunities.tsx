@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { LoadingSpinner } from '../components/LoadingSpinner'
+import { EmptyState } from '../components/EmptyState'
 import type { ProductListItem } from '../types'
 
 const statusLabel: Record<string, string> = {
@@ -25,7 +28,9 @@ export function Opportunities() {
   const [sort, setSort] = useState('updated_at')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setError(null)
     Promise.all([
       api.products.list({ search: search || undefined, category: category || undefined, status: statusFilter || undefined, sort, order }),
       api.products.categories(),
@@ -38,10 +43,14 @@ export function Opportunities() {
       .finally(() => setLoading(false))
   }, [search, category, statusFilter, sort, order])
 
+  useEffect(() => {
+    load()
+  }, [load])
+
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[40vh]">
-        <p className="text-[var(--forge-text-muted)]">Loading opportunities…</p>
+      <div className="p-8">
+        <LoadingSpinner message="Loading opportunities…" />
       </div>
     )
   }
@@ -49,9 +58,8 @@ export function Opportunities() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400">
-          {error}
-        </div>
+        <ErrorBanner message={error} onRetry={load} />
+        <Link to="/imports" className="mt-4 inline-block text-[var(--forge-accent)] text-sm">Import data →</Link>
       </div>
     )
   }
@@ -175,8 +183,13 @@ export function Opportunities() {
           </table>
         </div>
         {products.length === 0 && (
-          <div className="p-8 text-center text-[var(--forge-text-muted)]">
-            No products match your filters. Import data or add products.
+          <div className="p-8">
+            <EmptyState
+              title={search || category || statusFilter ? 'No products match your filters' : 'No products yet'}
+              description={search || category || statusFilter ? 'Try different search or filters.' : 'Import a CSV or add a product to get started.'}
+              actionLabel={search || category || statusFilter ? undefined : 'Add product'}
+              onAction={search || category || statusFilter ? undefined : () => navigate('/product/new')}
+            />
           </div>
         )}
       </div>

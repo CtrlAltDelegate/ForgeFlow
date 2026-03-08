@@ -1,25 +1,35 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { LoadingSpinner } from '../components/LoadingSpinner'
+import { EmptyState } from '../components/EmptyState'
 import type { DashboardSummary as DashboardSummaryType } from '../types'
 
 export function Dashboard() {
+  const navigate = useNavigate()
   const [data, setData] = useState<DashboardSummaryType | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true)
+    setError(null)
     api.dashboard
       .summary()
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    load()
   }, [])
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[40vh]">
-        <p className="text-[var(--forge-text-muted)]">Loading dashboard…</p>
+      <div className="p-8">
+        <LoadingSpinner message="Loading dashboard…" />
       </div>
     )
   }
@@ -27,9 +37,10 @@ export function Dashboard() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400">
-          {error}
-        </div>
+        <ErrorBanner message={error} onRetry={load} />
+        <Link to="/imports" className="mt-4 inline-block text-[var(--forge-accent)] text-sm">
+          Import data →
+        </Link>
       </div>
     )
   }
@@ -46,6 +57,17 @@ export function Dashboard() {
           Pipeline status and top opportunities
         </p>
       </header>
+
+      {data.total_products === 0 && (
+        <div className="mb-8">
+          <EmptyState
+            title="No products yet"
+            description="Import a CSV or add a product manually to get started."
+            actionLabel="Go to Data Imports"
+            onAction={() => navigate('/imports')}
+          />
+        </div>
+      )}
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <MetricCard label="Total products" value={String(data.total_products)} />

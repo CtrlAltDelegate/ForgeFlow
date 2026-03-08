@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { LoadingSpinner } from '../components/LoadingSpinner'
 import type { ProductListItem, CadModelResponse, CadCreate } from '../types'
 
 const PARAM_LABELS: Record<string, string> = {
@@ -118,7 +120,7 @@ export function CadGenerator() {
   if (loading) {
     return (
       <div className="p-8">
-        <p className="text-[var(--forge-text-muted)]">Loading…</p>
+        <LoadingSpinner message="Loading products and CAD…" />
       </div>
     )
   }
@@ -133,8 +135,8 @@ export function CadGenerator() {
       </header>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400 text-sm">
-          {error}
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
       )}
 

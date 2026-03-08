@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { useToast } from '../contexts/ToastContext'
 import type { ImportListItem, CsvPreviewResponse, ResearchDataCreate } from '../types'
 
 const emptyResearch: ResearchDataCreate = {
@@ -18,11 +20,11 @@ const emptyResearch: ResearchDataCreate = {
 
 export function DataImports() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [imports, setImports] = useState<ImportListItem[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
   const [preview, setPreview] = useState<CsvPreviewResponse | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [manualOpen, setManualOpen] = useState(false)
@@ -69,11 +71,10 @@ export function DataImports() {
     if (!selectedFile) return
     setUploading(true)
     setError(null)
-    setSuccess(null)
     api.imports
       .upload(selectedFile)
       .then((r) => {
-        setSuccess(`Imported ${r.record_count} products.`)
+        showToast(`Imported ${r.record_count} products.`)
         setSelectedFile(null)
         setPreview(null)
         loadImports()
@@ -92,13 +93,8 @@ export function DataImports() {
       </header>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400 text-sm">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 rounded-lg border border-green-500/50 bg-green-500/10 p-4 text-green-400 text-sm">
-          {success}
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
       )}
 
@@ -213,7 +209,7 @@ export function DataImports() {
                     listing_age_days: manualForm.listing_age_days ?? null,
                     notes: manualForm.notes || null,
                   })
-                  setSuccess(`Product "${product.name}" created.`)
+                  showToast(`Product "${product.name}" created.`)
                   setManualForm({ name: '', category: '', source: 'manual', ...emptyResearch })
                   setManualOpen(false)
                   loadImports()

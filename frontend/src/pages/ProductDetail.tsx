@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { LoadingSpinner } from '../components/LoadingSpinner'
 import type { Product, ResearchDataCreate } from '../types'
 
 function ResearchForm({
@@ -120,19 +122,24 @@ export function ProductDetail() {
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[40vh]">
-        <p className="text-[var(--forge-text-muted)]">Loading product…</p>
+      <div className="p-8">
+        <LoadingSpinner message="Loading product…" />
       </div>
     )
+  }
+
+  const retry = () => {
+    if (!idOrSlug) return
+    setError(null)
+    setLoading(true)
+    api.products.get(idOrSlug).then(setProduct).catch((e) => setError(e.message)).finally(() => setLoading(false))
   }
 
   if (error || !product) {
     return (
       <div className="p-8">
-        <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400">
-          {error ?? 'Product not found'}
-        </div>
-        <Link to="/opportunities" className="mt-4 inline-block text-[var(--forge-accent)]">
+        <ErrorBanner message={error ?? 'Product not found'} onRetry={retry} />
+        <Link to="/opportunities" className="mt-4 inline-block text-[var(--forge-accent)] text-sm">
           ← Back to opportunities
         </Link>
       </div>
@@ -143,6 +150,11 @@ export function ProductDetail() {
 
   return (
     <div className="p-8">
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        </div>
+      )}
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
           <Link to="/opportunities" className="text-sm text-[var(--forge-text-muted)] hover:text-[var(--forge-accent)]">
@@ -312,16 +324,19 @@ export function ProductDetail() {
           <section className="rounded-lg border border-[var(--forge-border)] bg-[var(--forge-surface)] p-4">
             <h2 className="text-sm font-medium text-[var(--forge-text-muted)] mb-2">CAD status</h2>
             <p className="text-sm text-[var(--forge-text-muted)]">No CAD model yet.</p>
+            <Link to={`/cad?product=${encodeURIComponent(product.slug)}`} className="text-xs text-[var(--forge-accent)] hover:underline mt-1 inline-block">Generate CAD →</Link>
           </section>
 
           <section className="rounded-lg border border-[var(--forge-border)] bg-[var(--forge-surface)] p-4">
             <h2 className="text-sm font-medium text-[var(--forge-text-muted)] mb-2">Manufacturing</h2>
             <p className="text-sm text-[var(--forge-text-muted)]">No simulation yet.</p>
+            <Link to={`/simulator?product=${encodeURIComponent(product.slug)}`} className="text-xs text-[var(--forge-accent)] hover:underline mt-1 inline-block">Run simulation →</Link>
           </section>
 
           <section className="rounded-lg border border-[var(--forge-border)] bg-[var(--forge-surface)] p-4">
             <h2 className="text-sm font-medium text-[var(--forge-text-muted)] mb-2">Listing draft</h2>
             <p className="text-sm text-[var(--forge-text-muted)]">No listing yet.</p>
+            <Link to={`/listings?product=${encodeURIComponent(product.slug)}`} className="text-xs text-[var(--forge-accent)] hover:underline mt-1 inline-block">Generate listing →</Link>
           </section>
         </div>
       </div>

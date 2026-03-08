@@ -98,12 +98,44 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 - **API**: `GET/POST /api/products/{id}/listings`, `GET/PATCH /api/products/{id}/listings/{listing_id}`.
 - **Frontend**: **Manufacturing Simulator** (`/simulator`): product + optional CAD model, material/layer height/infill/nozzle, “Run simulation”, result card + warnings, history. **Listing Studio** (`/listings`): product selector, “Generate listing”, view title/pitch/bullets/description/price/tags/photo prompt/why it could sell/differentiation, version switcher. Product Detail “Run simulation” and “Generate listing” link to these pages with `?product={slug}`.
 
+### Phase 5 (Polish)
+
+- **Error handling**: Reusable `ErrorBanner` with Retry/Dismiss; inline errors on forms; API failures show clear messages.
+- **Loading states**: `LoadingSpinner` (spinner + message) on Dashboard, Opportunities, Product Detail, CAD, Simulator, Listing Studio, Data Imports.
+- **Empty states**: Dashboard and Opportunities show friendly copy and primary action (e.g. “No products yet” → “Go to Data Imports” or “Add product”).
+- **Toasts**: Success toasts for product create, CSV import, manual entry (auto-dismiss).
+- **Product Detail**: CAD / Manufacturing / Listing sidebar cards link to the right tool when empty (“Generate CAD →”, etc.).
+
 ---
 
 ## What’s mocked vs live
 
 - **Live**: Full pipeline: database, product/research CRUD, opportunity scoring, CSV import, dashboard, **CAD** (templates + SCAD save + optional OpenSCAD STL), **manufacturing simulation** (heuristic), **listing generation** (templates), all UI pages.
 - **Optional / future**: OpenSCAD CLI (STL export). Slicer CLI (replace heuristic with real slicer). LLM provider (replace template listing with AI-generated copy).
+
+---
+
+## Environment variables (backend)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FORGEFLOW_DATABASE_URL` | `sqlite+aiosqlite:///./forgeflow.db` | Database URL (use Postgres URL in production). |
+| `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. |
+| `FORGEFLOW_DEBUG` | `false` | Enable SQL echo and debug. |
+| `FORGEFLOW_DEFAULT_MATERIAL_COST_PER_GRAM` | `0.02` | Used for simulation cost and scoring. |
+| `FORGEFLOW_DEFAULT_PLATFORM_FEE_PERCENT` | `6.5` | Used in margin scoring. |
+| `FORGEFLOW_DEFAULT_SHIPPING_ESTIMATE` | `4.0` | Used in margin scoring. |
+
+Create a `.env` file in `backend/` to override (e.g. `FORGEFLOW_OPENSCAD_PATH=/usr/bin/openscad`).
+
+---
+
+## Troubleshooting
+
+- **Dashboard / API shows nothing or errors**: Ensure the backend is running (`uvicorn app.main:app --reload` from `backend/`) and the frontend proxy targets `http://127.0.0.1:8000`. Run the seed script if the DB is empty: `python seeds/seed_data.py`.
+- **“OpenSCAD not found” when exporting STL**: Install [OpenSCAD](https://openscad.org/) and add it to your PATH, or set `FORGEFLOW_OPENSCAD_PATH` in `backend/.env` to the full path to the executable. CAD generation and saving still work without OpenSCAD; only STL export is affected.
+- **CSV import fails**: Ensure the file has `name` and `category` columns. Download the template from Data Imports and match the header names (case-insensitive, spaces normalized to underscores).
+- **Product not found (404)**: The product may have been deleted, or the slug/ID in the URL is wrong. Use the Opportunities list to open products by name.
 
 ---
 
@@ -187,9 +219,9 @@ If you use SSH instead of HTTPS, the remote URL will be `git@github.com:YOUR_USE
 
 ---
 
-## Next phases (from spec)
+## Roadmap (post-MVP)
 
-- **Phase 2**: Scoring engine, import flow (CSV + manual), CRUD for products/research.
-- **Phase 3**: CAD generation service, save `.scad` files, optional OpenSCAD CLI export.
-- **Phase 4**: Manufacturing simulation, listing generation.
-- **Phase 5**: Polish UI, error handling, README and sample data refinements.
+- Slicer CLI integration (OrcaSlicer / Bambu Studio) for real print-time and material estimates.
+- LLM provider integration for AI-generated listing copy.
+- Settings page: wire OpenSCAD path, material defaults, fee assumptions.
+- Optional: user auth, team collaboration, cloud deploy.

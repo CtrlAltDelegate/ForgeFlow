@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../services/api'
+import { ErrorBanner } from '../components/ErrorBanner'
+import { useToast } from '../contexts/ToastContext'
 import type { ProductCreate as ProductCreateType, ResearchDataCreate } from '../types'
 
 export function ProductCreate() {
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState<ProductCreateType & ResearchDataCreate>({
@@ -52,6 +55,7 @@ export function ProductCreate() {
         listing_age_days: form.listing_age_days ?? null,
         notes: form.notes || null,
       })
+      showToast(`Product "${product.name}" created.`)
       navigate(`/product/${product.slug}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create product')
@@ -71,8 +75,8 @@ export function ProductCreate() {
       </header>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-400 text-sm">
-          {error}
+        <div className="mb-4">
+          <ErrorBanner message={error} onDismiss={() => setError(null)} />
         </div>
       )}
 
