@@ -118,13 +118,28 @@ export function DataImports() {
                 className="mt-1 block w-full text-sm text-[var(--forge-text-muted)] file:mr-2 file:rounded file:border-0 file:bg-[var(--forge-accent)] file:px-3 file:py-1 file:text-white"
               />
             </label>
+            {selectedFile && (
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <span className="text-sm text-[var(--forge-text-muted)] truncate max-w-[200px]" title={selectedFile.name}>
+                  {selectedFile.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium disabled:opacity-50"
+                >
+                  {uploading ? 'Uploading…' : preview?.valid ? `Import ${preview.row_count} products` : 'Import'}
+                </button>
+              </div>
+            )}
             {preview && (
-              <div className="text-sm">
+              <div className="text-sm mt-3">
                 <p className="text-[var(--forge-text-muted)]">
                   {preview.valid ? (
                     <span className="text-green-400">{preview.row_count} rows valid. Preview:</span>
                   ) : (
-                    <span className="text-amber-400">Validation errors:</span>
+                    <span className="text-amber-400">Validation errors (you can still try Import):</span>
                   )}
                 </p>
                 {preview.errors.length > 0 && (
@@ -153,16 +168,6 @@ export function DataImports() {
                       ))}
                     </tbody>
                   </table>
-                )}
-                {preview.valid && selectedFile && (
-                  <button
-                    type="button"
-                    onClick={handleUpload}
-                    disabled={uploading}
-                    className="mt-3 px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium disabled:opacity-50"
-                  >
-                    {uploading ? 'Uploading…' : `Import ${preview.row_count} products`}
-                  </button>
                 )}
               </div>
             )}
