@@ -59,8 +59,9 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ### Database
 
-- **MVP**: SQLite. The file is created at `backend/forgeflow.db` when the API starts.
-- Schema is created on first run via `init_db()`. To reset, delete `forgeflow.db` and restart the API, then re-run the seed script.
+- **MVP**: SQLite. The database file is always created at `backend/forgeflow.db` (absolute path), so your imports and products persist no matter which folder you start the server from.
+- Schema is created on first run via `init_db()`. To reset, delete `backend/forgeflow.db` and restart the API, then re-run the seed script.
+- Override the location with `FORGEFLOW_DATABASE_URL` in `.env` if needed.
 
 ### Import file types (Data Imports)
 
@@ -119,7 +120,7 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FORGEFLOW_DATABASE_URL` | `sqlite+aiosqlite:///./forgeflow.db` | Database URL (use Postgres URL in production). |
+| `FORGEFLOW_DATABASE_URL` | *(absolute path to backend/forgeflow.db)* | Database URL. Default uses backend folder so data persists; override for Postgres in production. |
 | `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. |
 | `FORGEFLOW_DEBUG` | `false` | Enable SQL echo and debug. |
 | `FORGEFLOW_CORS_ORIGINS` | (includes localhost + Netlify) | Comma-separated origins for CORS. |

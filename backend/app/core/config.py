@@ -2,6 +2,10 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
+# Resolve backend directory so DB path is always the same regardless of CWD
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+_DEFAULT_DB_PATH = _BACKEND_DIR / "forgeflow.db"
+
 
 class Settings(BaseSettings):
     """ForgeFlow application settings."""
@@ -12,8 +16,9 @@ class Settings(BaseSettings):
     # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
 
-    # Database
-    database_url: str = "sqlite+aiosqlite:///./forgeflow.db"
+    # Database: default is absolute path in backend folder so data persists across restarts
+    # no matter where the server is started from. Override with FORGEFLOW_DATABASE_URL in .env.
+    database_url: str = f"sqlite+aiosqlite:///{_DEFAULT_DB_PATH.resolve().as_posix()}"
 
     # Paths (relative to project root or absolute)
     data_dir: Path = Path("./data")
