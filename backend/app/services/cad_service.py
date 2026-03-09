@@ -6,11 +6,36 @@ OpenSCAD CLI is used for STL export when available.
 """
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
 from app.core.config import settings
+
+
+def check_openscad_available() -> tuple[bool, str]:
+    """
+    Check if OpenSCAD CLI is available. Returns (available, message).
+    """
+    path = shutil.which(settings.openscad_path)
+    if path:
+        return True, ""
+    try:
+        subprocess.run(
+            [settings.openscad_path, "--version"],
+            capture_output=True,
+            timeout=5,
+        )
+        return True, ""
+    except FileNotFoundError:
+        return False, (
+            f"OpenSCAD is not installed or not on PATH. "
+            f"Set FORGEFLOW_OPENSCAD_PATH to the executable path. "
+            f"CAD generation and .scad saving still work; only STL export is affected."
+        )
+    except Exception:
+        return False, "OpenSCAD could not be run. STL export is unavailable."
 
 
 MODEL_TYPES = [
@@ -224,7 +249,10 @@ def export_stl(scad_path: Path, stl_path: Path) -> tuple[bool, str]:
             return False, result.stderr or result.stdout or f"Exit code {result.returncode}"
         return True, "OK"
     except FileNotFoundError:
-        return False, f"OpenSCAD not found at '{settings.openscad_path}'. Install OpenSCAD or set FORGEFLOW_OPENSCAD_PATH."
+        return False, (
+            "STL export is not available on this server (OpenSCAD not installed). "
+            "You can still generate and save .scad files and export to STL locally."
+        )
     except subprocess.TimeoutExpired:
         return False, "OpenSCAD timed out."
     except Exception as e:

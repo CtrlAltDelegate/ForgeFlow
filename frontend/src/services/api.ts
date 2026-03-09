@@ -67,6 +67,8 @@ export const api = {
       request<import('../types').ResearchDataResponse>(`/products/${productId}/research`, { method: 'POST', body: JSON.stringify(body) }),
   },
   cad: {
+    openscadAvailable: () =>
+      request<{ available: boolean; message: string | null }>('/products/openscad-available'),
     modelTypes: () => request<string[]>('/products/model-types'),
     list: (productId: number) =>
       request<import('../types').CadModelResponse[]>(`/products/${productId}/cad`),

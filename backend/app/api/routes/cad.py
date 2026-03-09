@@ -15,10 +15,18 @@ from app.services.cad_service import (
     generate_scad_code,
     save_scad_file,
     export_stl as run_export_stl,
+    check_openscad_available,
     MODEL_TYPES,
 )
 
 router = APIRouter()
+
+
+@router.get("/openscad-available")
+def openscad_available() -> dict:
+    """Check if OpenSCAD CLI is available for STL export."""
+    available, message = check_openscad_available()
+    return {"available": available, "message": message or None}
 
 
 @router.get("/model-types", response_model=list[str])

@@ -34,21 +34,28 @@ export function CadGenerator() {
   const [generating, setGenerating] = useState(false)
   const [exporting, setExporting] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [openscadWarning, setOpenscadWarning] = useState<string | null>(null)
   const [log, setLog] = useState<string[]>([])
 
   useEffect(() => {
-    Promise.all([api.products.list({ limit: 200 }), api.cad.modelTypes()])
-      .then(([list, types]) => {
-        setProducts(list)
-        setModelTypes(types)
-        if (productSlug && list.length > 0) {
-          const p = list.find((x) => x.slug === productSlug)
-          if (p) setSelectedProductId(p.id)
-        }
-        if (!selectedProductId && list.length > 0 && !productSlug) {
-          setSelectedProductId(list[0].id)
-        }
-      })
+    Promise.all([
+      api.products.list({ limit: 200 }),
+      api.cad.modelTypes(),
+      api.cad.openscadAvailable().catch(() => ({ available: true, message: null })),
+    ]).then(([list, types, openscad]) => {
+      setProducts(list)
+      setModelTypes(types)
+      if (!openscad.available && openscad.message) {
+        setOpenscadWarning(openscad.message)
+      }
+      if (productSlug && list.length > 0) {
+        const p = list.find((x) => x.slug === productSlug)
+        if (p) setSelectedProductId(p.id)
+      }
+      if (!selectedProductId && list.length > 0 && !productSlug) {
+        setSelectedProductId(list[0].id)
+      }
+    })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [productSlug])
@@ -137,6 +144,20 @@ export function CadGenerator() {
       {error && (
         <div className="mb-4">
           <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        </div>
+      )}
+
+      {openscadWarning && (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          <span className="flex-1">{openscadWarning}</span>
+          <button
+            type="button"
+            onClick={() => setOpenscadWarning(null)}
+            className="shrink-0 text-amber-400 hover:text-amber-300"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
 
