@@ -163,7 +163,9 @@ ForgeFlow is designed to use **two LLM “phases”** with separate API keys and
 ## Troubleshooting
 
 - **Dashboard / API shows nothing or errors**: Ensure the backend is running (`uvicorn app.main:app --reload` from `backend/`) and the frontend proxy targets `http://127.0.0.1:8000`. Run the seed script if the DB is empty: `python seeds/seed_data.py`.
-- **“OpenSCAD not found” when exporting STL**: Install [OpenSCAD](https://openscad.org/) and add it to your PATH, or set `FORGEFLOW_OPENSCAD_PATH` in `backend/.env` to the full path to the executable. CAD generation and saving still work without OpenSCAD; only STL export is affected.
+- **“OpenSCAD not found” when exporting STL**:
+  - **Running locally (Windows):** Install [OpenSCAD](https://openscad.org/) and set `FORGEFLOW_OPENSCAD_PATH=C:\Program Files\OpenSCAD\openscad.exe` in `backend/.env`. Start the server from the `backend` folder so it loads `.env`.
+  - **Running in a container (Docker / Render / Railway / etc.):** The container does not use your PC’s `.env` or Windows paths. Use the repo’s `backend/Dockerfile`, which installs OpenSCAD inside the image so STL export works. Set `FORGEFLOW_OPENSCAD_PATH=openscad` (or `/usr/bin/openscad`) in the **deployment** environment if your platform doesn’t pick it up.
 - **CSV import fails**: Ensure the file has `name` and `category` columns. Download the template from Data Imports and match the header names (case-insensitive, spaces normalized to underscores).
 - **Product not found (404)**: The product may have been deleted, or the slug/ID in the URL is wrong. Use the Opportunities list to open products by name.
 
@@ -222,15 +224,17 @@ ForgeFlow/
 
 In Netlify **Site settings → Environment variables**, add:
 
-- `VITE_API_URL` = your backend URL (e.g. `https://your-backend.onrender.com`).
+- `VITE_API_URL` = your **Railway** backend URL (e.g. `https://your-app.up.railway.app`).
 
-In the frontend, use `VITE_API_URL` for API requests in production (and keep `/api` with proxy for local dev). The current proxy only works in dev; for production the app must call the real backend URL.
+The frontend uses `VITE_API_URL` for API requests in production; local dev uses the proxy to your backend.
 
-### Backend (e.g. Render or Railway)
+### Backend (Railway)
 
-- **Render**: New → Web Service → connect the same GitHub repo. Root directory: `backend`. Build: `pip install -r requirements.txt`. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-- **Railway**: New project from repo, add a service, set root to `backend`, and use the same start command.
-- Use a **Postgres** database add-on for production (Render/Railway provide one); change `database_url` in config to the provided URL. For MVP you can still use SQLite on a single instance, but it won’t persist across redeploys on most hosts.
+- **Railway** runs the API; Netlify’s frontend calls it via `VITE_API_URL`.
+- **Root directory:** `backend`.
+- **Deploy with Dockerfile (recommended):** Railway will detect `backend/Dockerfile`, which installs OpenSCAD so **STL export** works in production. No extra env vars needed for OpenSCAD.
+- If you don’t use the Dockerfile: Build `pip install -r requirements.txt`, Start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Then OpenSCAD won’t be available in the container (CAD generation and .scad save still work; only STL export is disabled).
+- **Database:** Add a Postgres add-on and set `FORGEFLOW_DATABASE_URL` to the provided URL for persistent data. Without it, SQLite in the container is used and may not persist across redeploys.
 
 ---
 
