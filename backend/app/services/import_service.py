@@ -19,6 +19,16 @@ OPTIONAL_COLUMNS = {
 }
 ALL_COLUMNS = REQUIRED_COLUMNS | OPTIONAL_COLUMNS
 
+# Accept common alternate headers (e.g. from eRank, spreadsheets)
+HEADER_ALIASES = {
+    "product_name": "name",
+    "product": "name",
+    "title": "name",
+    "keyword": "name",
+    "product_type": "category",
+    "type": "category",
+}
+
 
 @dataclass
 class RowError:
@@ -84,16 +94,32 @@ def parse_csv(content: str | bytes) -> tuple[list[ParsedRow], list[RowError]]:
 
     reader = csv.DictReader(io.StringIO(content))
     raw_headers = reader.fieldnames or []
-    headers = {_normalize_header(h): h for h in raw_headers}
+    normalized_to_canonical: dict[str, str] = {}
+    for h in raw_headers:
+        norm = _normalize_header(h)
+        if norm in REQUIRED_COLUMNS or norm in OPTIONAL_COLUMNS:
+            normalized_to_canonical[norm] = norm
+        elif norm in HEADER_ALIASES:
+            normalized_to_canonical[norm] = HEADER_ALIASES[norm]
 
-    missing = REQUIRED_COLUMNS - set(headers.keys())
+    canonical_available = set(normalized_to_canonical.values())
+    missing = REQUIRED_COLUMNS - canonical_available
     if missing:
-        errors.append(RowError(row=0, message=f"Missing required columns: {missing}"))
+        errors.append(RowError(row=0, message=f"Missing required columns: {missing} (need 'name' and 'category', or aliases like 'Product Name', 'Keyword')"))
         return rows, errors
 
     for i, raw_row in enumerate(reader):
         row_num = i + 2  # 1-based, +1 for header
-        row_dict = {_normalize_header(k): v for k, v in raw_row.items() if k}
+        row_dict = {}
+        for k, v in (raw_row or {}).items():
+            if not k:
+                continue
+            norm = _normalize_header(k)
+            canonical = normalized_to_canonical.get(norm)
+            if canonical:
+                # Prefer non-empty value if we already have one
+                if canonical not in row_dict or (v and str(v).strip()):
+                    row_dict[canonical] = v
         name = (row_dict.get("name") or "").strip()
         category = (row_dict.get("category") or "").strip()
         if not name:
