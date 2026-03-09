@@ -26,14 +26,13 @@ class Settings(BaseSettings):
     slicer_path: str = ""
 
     # LLM / AI (optional). If set, used for listing/review and CAD generation.
-    # Listing/review: simpler, faster model (e.g. gpt-4o-mini, claude-3-haiku).
-    # CAD: more capable model for code/OpenSCAD generation (e.g. gpt-4o, claude-3-5-sonnet).
+    # Listing/review: gpt-4o-mini (OpenAI). CAD: claude-3-5-sonnet (Anthropic).
     listing_llm_api_key: str = ""
     listing_llm_model: str = "gpt-4o-mini"
     listing_llm_provider: str = "openai"
     cad_llm_api_key: str = ""
-    cad_llm_model: str = "gpt-4o"
-    cad_llm_provider: str = "openai"
+    cad_llm_model: str = "claude-3-5-sonnet-20241022"
+    cad_llm_provider: str = "anthropic"
 
     # Default manufacturing assumptions
     default_material_cost_per_gram: float = 0.02
