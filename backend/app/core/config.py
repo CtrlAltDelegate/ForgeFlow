@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     app_name: str = "ForgeFlow"
     debug: bool = False
 
+    # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
+
     # Database
     database_url: str = "sqlite+aiosqlite:///./forgeflow.db"
 
