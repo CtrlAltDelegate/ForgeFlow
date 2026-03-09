@@ -9,7 +9,9 @@ from app.models import Product, ResearchData, ImportRecord
 from app.models.product import ProductStatus, slugify
 from app.services.import_service import (
     parse_csv,
+    parse_pdf,
     get_csv_template,
+    ALLOWED_IMPORT_EXTENSIONS,
 )
 from app.schemas.import_schema import ImportRecordResponse, ImportListResponse
 
@@ -22,17 +24,30 @@ def download_csv_template() -> str:
     return get_csv_template()
 
 
+def _extension(filename: str) -> str:
+    return (filename or "").lower().rsplit(".", 1)[-1] if "." in (filename or "") else ""
+
+
 @router.post("/preview")
-async def preview_csv(
+async def preview_import(
     file: UploadFile = File(...),
 ) -> dict:
     """
-    Parse and validate CSV without saving. Returns parsed rows and any errors.
+    Parse and validate CSV or PDF without saving. Returns parsed rows and any errors.
     """
-    if not file.filename or not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="File must be a CSV")
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+    ext = f".{_extension(file.filename)}"
+    if ext not in ALLOWED_IMPORT_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File must be one of: {', '.join(sorted(ALLOWED_IMPORT_EXTENSIONS))}",
+        )
     content = await file.read()
-    rows, errors = parse_csv(content)
+    if ext == ".pdf":
+        rows, errors = parse_pdf(content, file.filename)
+    else:
+        rows, errors = parse_csv(content)
     return {
         "valid": len(errors) == 0,
         "row_count": len(rows),
@@ -65,17 +80,26 @@ async def _ensure_slug_unique(db: AsyncSession, base_slug: str) -> str:
 
 
 @router.post("/upload", response_model=ImportRecordResponse)
-async def upload_csv(
+async def upload_import(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ) -> ImportRecordResponse:
     """
-    Upload CSV: parse, create products + research_data, log import.
+    Upload CSV or PDF: parse, create products + research_data, log import.
     """
-    if not file.filename or not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="File must be a CSV")
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+    ext = f".{_extension(file.filename)}"
+    if ext not in ALLOWED_IMPORT_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File must be one of: {', '.join(sorted(ALLOWED_IMPORT_EXTENSIONS))}",
+        )
     content = await file.read()
-    rows, errors = parse_csv(content)
+    if ext == ".pdf":
+        rows, errors = parse_pdf(content, file.filename)
+    else:
+        rows, errors = parse_csv(content)
     if errors:
         raise HTTPException(
             status_code=400,
@@ -84,7 +108,7 @@ async def upload_csv(
 
     imp = ImportRecord(
         file_name=file.filename,
-        source_type="csv",
+        source_type=ext.lstrip("."),
         record_count=len(rows),
         status="processing",
         notes=None,
@@ -110,7 +134,7 @@ async def upload_csv(
 
         research = ResearchData(
             product_id=product.id,
-            source_type="csv",
+            source_type=r.source,
             keyword=r.source_keyword,
             listed_price=r.listed_price,
             review_count=r.review_count,

@@ -1,10 +1,13 @@
 """
-CSV import: parse, validate, create products + research_data, log to imports.
+CSV and PDF import: parse, validate, create products + research_data, log to imports.
+PDF: extract text and create one product per file (name from filename, notes = text).
 """
 
 import csv
 import io
+import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from app.models import Product, ResearchData, ImportRecord
 from app.models.product import ProductStatus, slugify
@@ -28,6 +31,53 @@ HEADER_ALIASES = {
     "product_type": "category",
     "type": "category",
 }
+
+# Allowed import file extensions
+ALLOWED_IMPORT_EXTENSIONS = {".csv", ".pdf"}
+
+
+def _extract_text_from_pdf(content: bytes) -> str:
+    """Extract text from PDF bytes. Returns empty string on failure."""
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(content))
+        parts = []
+        for page in reader.pages:
+            t = page.extract_text()
+            if t:
+                parts.append(t)
+        return "\n\n".join(parts).strip() if parts else ""
+    except Exception:
+        return ""
+
+
+def _sanitize_filename_for_name(filename: str) -> str:
+    """Turn a filename (e.g. 'My Product Research.pdf') into a product name."""
+    stem = Path(filename).stem
+    stem = re.sub(r"[^\w\s\-]", " ", stem)
+    stem = re.sub(r"\s+", " ", stem).strip()
+    return stem[:255] if stem else "Imported from PDF"
+
+
+def parse_pdf(content: bytes, filename: str) -> tuple[list["ParsedRow"], list[RowError]]:
+    """
+    Extract text from PDF and return one ParsedRow (product name from filename, notes = text).
+    Future: when listing_llm_api_key is set, can call LLM to structure text into multiple products.
+    """
+    errors: list[RowError] = []
+    text = _extract_text_from_pdf(content)
+    if not text:
+        errors.append(RowError(row=0, message="Could not extract text from PDF (empty or invalid)."))
+        return [], errors
+    name = _sanitize_filename_for_name(filename or "document.pdf")
+    row = ParsedRow(
+        name=name,
+        category="imported",
+        source="pdf",
+        source_notes=None,
+        notes=text[:10000],
+    )
+    return [row], []
 
 
 @dataclass

@@ -62,9 +62,9 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 - **MVP**: SQLite. The file is created at `backend/forgeflow.db` when the API starts.
 - Schema is created on first run via `init_db()`. To reset, delete `forgeflow.db` and restart the API, then re-run the seed script.
 
-### CSV template (Data Imports)
+### Import file types (Data Imports)
 
-- Use the **Data Imports** page: download the CSV template, fill it, then upload. Or add products manually (form on Data Imports or “Add product” on Opportunities).
+- Use the **Data Imports** page: **CSV:** download the template, fill name/category and optional research columns, then upload. **PDF:** upload a PDF to create one product (name from filename, notes = extracted text). Or add products manually (form on Data Imports or “Add product” on Opportunities).
 
 ---
 
@@ -122,11 +122,40 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 | `FORGEFLOW_DATABASE_URL` | `sqlite+aiosqlite:///./forgeflow.db` | Database URL (use Postgres URL in production). |
 | `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. |
 | `FORGEFLOW_DEBUG` | `false` | Enable SQL echo and debug. |
+| `FORGEFLOW_CORS_ORIGINS` | (includes localhost + Netlify) | Comma-separated origins for CORS. |
 | `FORGEFLOW_DEFAULT_MATERIAL_COST_PER_GRAM` | `0.02` | Used for simulation cost and scoring. |
 | `FORGEFLOW_DEFAULT_PLATFORM_FEE_PERCENT` | `6.5` | Used in margin scoring. |
 | `FORGEFLOW_DEFAULT_SHIPPING_ESTIMATE` | `4.0` | Used in margin scoring. |
+| `FORGEFLOW_LISTING_LLM_API_KEY` | *(empty)* | API key for listing/review LLM (optional). |
+| `FORGEFLOW_LISTING_LLM_MODEL` | `gpt-4o-mini` | Model for listing/review (e.g. OpenAI). |
+| `FORGEFLOW_LISTING_LLM_PROVIDER` | `openai` | Provider: `openai`, `anthropic`, etc. |
+| `FORGEFLOW_CAD_LLM_API_KEY` | *(empty)* | API key for CAD-generation LLM (optional). |
+| `FORGEFLOW_CAD_LLM_MODEL` | `gpt-4o` | Model for CAD/code generation. |
+| `FORGEFLOW_CAD_LLM_PROVIDER` | `openai` | Provider for CAD phase. |
 
 Create a `.env` file in `backend/` to override (e.g. `FORGEFLOW_OPENSCAD_PATH=/usr/bin/openscad`).
+
+---
+
+## LLM / API keys (optional)
+
+ForgeFlow is designed to use **two LLM “phases”** with separate API keys and model choices:
+
+1. **Listing / review (simpler LLM)**  
+   Use a **faster, cheaper** model for:
+   - Review summarization and listing copy (title, bullets, description, tags).
+   - Optional: extracting structured product data from PDF or freeform text.
+
+   **Suggestions:** OpenAI `gpt-4o-mini`, Anthropic `claude-3-haiku`, or Google `gemini-1.5-flash`. One API key (e.g. `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`) is enough; set `FORGEFLOW_LISTING_LLM_API_KEY` and `FORGEFLOW_LISTING_LLM_MODEL` (and provider if you add provider-specific code).
+
+2. **CAD generation (more capable LLM)**  
+   Use a **more capable** model for:
+   - Turning product descriptions or specs into OpenSCAD code or template parameters.
+   - Choosing template type (bracket, clip, holder, etc.) and dimensions from natural language.
+
+   **Suggestions:** OpenAI `gpt-4o`, Anthropic `claude-3-5-sonnet`, or Google `gemini-1.5-pro`. Set `FORGEFLOW_CAD_LLM_API_KEY` and `FORGEFLOW_CAD_LLM_MODEL`. You can use the same provider as listing with a different model, or a different provider.
+
+**Current behavior:** Without these keys set, listing stays **template-based** and CAD stays **template + manual parameters**. The config and wiring are in place so you can plug in calls to your chosen provider when ready (e.g. in `listing_service.py` and `cad_service.py`).
 
 ---
 

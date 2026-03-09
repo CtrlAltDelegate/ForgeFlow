@@ -25,6 +25,16 @@ class Settings(BaseSettings):
     openscad_path: str = "openscad"
     slicer_path: str = ""
 
+    # LLM / AI (optional). If set, used for listing/review and CAD generation.
+    # Listing/review: simpler, faster model (e.g. gpt-4o-mini, claude-3-haiku).
+    # CAD: more capable model for code/OpenSCAD generation (e.g. gpt-4o, claude-3-5-sonnet).
+    listing_llm_api_key: str = ""
+    listing_llm_model: str = "gpt-4o-mini"
+    listing_llm_provider: str = "openai"
+    cad_llm_api_key: str = ""
+    cad_llm_model: str = "gpt-4o"
+    cad_llm_provider: str = "openai"
+
     # Default manufacturing assumptions
     default_material_cost_per_gram: float = 0.02
     default_platform_fee_percent: float = 6.5

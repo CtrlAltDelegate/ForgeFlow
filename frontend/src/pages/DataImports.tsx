@@ -88,7 +88,7 @@ export function DataImports() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold text-[var(--forge-text)]">Data Imports</h1>
         <p className="text-[var(--forge-text-muted)] mt-1">
-          Upload CSV, download template, or add products manually
+          Upload CSV or PDF, download template, or add products manually
         </p>
       </header>
 
@@ -110,10 +110,10 @@ export function DataImports() {
               Download CSV template
             </a>
             <label className="block">
-              <span className="text-sm text-[var(--forge-text-muted)]">Choose file</span>
+              <span className="text-sm text-[var(--forge-text-muted)]">Choose file (CSV or PDF)</span>
               <input
                 type="file"
-                accept=".csv"
+                accept=".csv,.pdf"
                 onChange={handleFileSelect}
                 className="mt-1 block w-full text-sm text-[var(--forge-text-muted)] file:mr-2 file:rounded file:border-0 file:bg-[var(--forge-accent)] file:px-3 file:py-1 file:text-white"
               />
