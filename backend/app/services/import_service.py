@@ -59,7 +59,7 @@ def _sanitize_filename_for_name(filename: str) -> str:
     return stem[:255] if stem else "Imported from PDF"
 
 
-def parse_pdf(content: bytes, filename: str) -> tuple[list["ParsedRow"], list[RowError]]:
+def parse_pdf(content: bytes, filename: str) -> tuple[list["ParsedRow"], list["RowError"]]:
     """
     Extract text from PDF and return one ParsedRow (product name from filename, notes = text).
     Future: when listing_llm_api_key is set, can call LLM to structure text into multiple products.
