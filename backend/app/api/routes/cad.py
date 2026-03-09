@@ -74,7 +74,10 @@ async def create_cad_model(
     )
     product = result.scalar_one_or_none()
     if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found. It may have been deleted or the database was reset (e.g. after a redeploy). Refresh the page and select a product again.",
+        )
     if payload.model_type not in MODEL_TYPES:
         raise HTTPException(
             status_code=400,

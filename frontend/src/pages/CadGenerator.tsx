@@ -95,8 +95,17 @@ export function CadGenerator() {
       setSelectedCad(created)
       setLog((prev) => [...prev, `Created CAD model v${created.version} (${created.scad_file_path || 'saved'}).`])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Generate failed')
-      setLog((prev) => [...prev, `Error: ${e instanceof Error ? e.message : 'Unknown'}`])
+      const message = e instanceof Error ? e.message : 'Generate failed'
+      setError(message)
+      setLog((prev) => [...prev, `Error: ${message}`])
+      // If product not found (e.g. DB reset on Railway), refresh list and clear stale selection
+      if (typeof message === 'string' && message.toLowerCase().includes('product not found')) {
+        api.products.list({ limit: 200 }).then((list) => {
+          setProducts(list)
+          const stillExists = list.some((p) => p.id === selectedProductId)
+          if (!stillExists && list.length > 0) setSelectedProductId(list[0].id)
+        })
+      }
     } finally {
       setGenerating(false)
     }
