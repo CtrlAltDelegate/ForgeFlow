@@ -119,20 +119,18 @@ export function DataImports() {
               />
             </label>
             {selectedFile && (
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <span className="text-sm text-[var(--forge-text-muted)] truncate max-w-[200px]" title={selectedFile.name}>
-                  {selectedFile.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleUpload}
-                  disabled={uploading}
-                  className="px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium disabled:opacity-50"
-                >
-                  {uploading ? 'Uploading…' : preview?.valid ? `Import ${preview.row_count} products` : 'Import'}
-                </button>
-              </div>
+              <p className="text-sm text-[var(--forge-text-muted)] mt-1 truncate max-w-full" title={selectedFile.name}>
+                Selected: {selectedFile.name}
+              </p>
             )}
+            <button
+              type="button"
+              onClick={handleUpload}
+              disabled={!selectedFile || uploading}
+              className="mt-3 w-full sm:w-auto px-5 py-2.5 rounded-md bg-[var(--forge-accent)] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploading ? 'Uploading…' : selectedFile ? (preview?.valid ? `Import ${preview.row_count} products` : 'Import CSV') : 'Select a file, then click Import'}
+            </button>
             {preview && (
               <div className="text-sm mt-3">
                 <p className="text-[var(--forge-text-muted)]">
