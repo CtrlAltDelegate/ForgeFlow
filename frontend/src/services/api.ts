@@ -1,12 +1,14 @@
-// In production (e.g. Netlify), set VITE_API_URL to your backend (e.g. https://your-api.onrender.com).
-// In dev, leave unset to use the Vite proxy (/api → backend).
+// In production (e.g. Netlify), set VITE_API_URL to your backend root (e.g. https://your-api.onrender.com).
+// Paths are appended with /api (backend mounts routes at /api). In dev we use /api and the Vite proxy.
 function getApiBase(): string {
   const raw = import.meta.env.VITE_API_URL ?? '/api'
   const trimmed = raw.replace(/\/$/, '')
   if (!trimmed || trimmed === '/api') return '/api'
   // Must start with protocol so the browser doesn't treat it as a relative path
-  if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`
-  return trimmed
+  let base = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  // Backend mounts all API routes under /api; ensure base ends with /api
+  if (!base.endsWith('/api')) base = base.replace(/\/?$/, '') + '/api'
+  return base
 }
 const API_BASE = getApiBase()
 
