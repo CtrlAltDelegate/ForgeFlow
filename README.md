@@ -234,12 +234,15 @@ The frontend uses `VITE_API_URL` for API requests in production; local dev uses 
 - **Root directory:** `backend`.
 - **Deploy with Dockerfile (recommended):** Railway will detect `backend/Dockerfile`, which installs OpenSCAD and uses `run.sh` so the app listens on Railway’s `PORT`. Don’t set a custom **Start Command** in Railway so the Dockerfile `CMD` is used.
 - If you don’t use the Dockerfile: Build `pip install -r requirements.txt`, Start **`./run.sh`** (or `sh run.sh`) so `PORT` is read from the environment. Using `--port $PORT` directly can pass the literal `$PORT` and fail.
-- **Database:** Add a Postgres add-on, then in the **ForgeFlow** service set `FORGEFLOW_DATABASE_URL` using Railway’s **variable reference** so the password is always current:
-  - ForgeFlow → **Variables** → **New variable** (or **Add reference**).
-  - Name: `FORGEFLOW_DATABASE_URL`.
-  - Value: **`${{Postgres.DATABASE_URL}}`** (replace `Postgres` with your Postgres service name if different, e.g. `postgres`).
-  - Railway will inject the live URL at runtime, so you avoid "password authentication failed" after password rotation.
-  - If you paste the URL by hand instead, copy it again from Postgres → Variables after any redeploy and update ForgeFlow’s variable, then redeploy ForgeFlow.
+- **Database:** Add a Postgres add-on. To avoid "password authentication failed" (stale DATABASE_URL), use **variable references for each credential** on the ForgeFlow service so the app builds the URL from current values:
+  - ForgeFlow → **Variables** → add these (use **Add reference** and pick your Postgres service for each):
+    - `FORGEFLOW_PG_HOST` → `${{Postgres.PGHOST}}`
+    - `FORGEFLOW_PG_PORT` → `${{Postgres.PGPORT}}`
+    - `FORGEFLOW_PG_USER` → `${{Postgres.PGUSER}}`
+    - `FORGEFLOW_PG_PASSWORD` → `${{Postgres.PGPASSWORD}}`
+    - `FORGEFLOW_PG_DATABASE` → `${{Postgres.PGDATABASE}}`
+  - Replace `Postgres` with your Postgres service name if different. The app will build the Postgres URL from these; each is resolved at runtime so the password is always current.
+  - Alternatively you can set `FORGEFLOW_DATABASE_URL` to the full URL (or `${{Postgres.DATABASE_URL}}`), but if that keeps failing with invalid password, use the five PG_* variables above.
 - **CORS:** Add your Netlify frontend origin to `FORGEFLOW_CORS_ORIGINS` (e.g. `https://forgeflow-dashboard.netlify.app`) so the browser can call the API.
 
 ---
