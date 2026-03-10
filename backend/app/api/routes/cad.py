@@ -8,10 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
+from sqlalchemy.orm import selectinload
+
 from app.core.database import get_db
 from app.core.config import settings
 from app.models import Product, CadModel
 from app.models.product import ProductStatus
+from app.services.cad_service import suggest_cad_from_product
 from app.schemas.cad import CadCreate, CadModelResponse, CadExportResult
 from app.services.cad_service import (
     generate_scad_code,
@@ -71,9 +74,9 @@ async def create_cad_model(
     payload: CadCreate,
     db: AsyncSession = Depends(get_db),
 ) -> CadModelResponse:
-    """Generate and save a new CAD model for the product."""
+    """Generate and save a new CAD model. If use_ai=True and CAD LLM is configured, Claude suggests template + params (Etsy best-seller style)."""
     result = await db.execute(
-        select(Product).where(Product.id == product_id)
+        select(Product).where(Product.id == product_id).options(selectinload(Product.research_data))
     )
     product = result.scalar_one_or_none()
     if not product:
@@ -81,14 +84,31 @@ async def create_cad_model(
             status_code=404,
             detail="Product not found. It may have been deleted or the database was reset (e.g. after a redeploy). Refresh the page and select a product again.",
         )
-    if payload.model_type not in MODEL_TYPES:
+
+    model_type = payload.model_type
+    parameters = dict(payload.parameters or {})
+    generation_method = "template"
+
+    if payload.use_ai:
+        notes = None
+        if product.research_data:
+            r = product.research_data[0]
+            parts = [r.notes or "", f"Price: {r.listed_price}" if r.listed_price else "", f"Competitors: {r.competitor_count}" if r.competitor_count is not None else ""]
+            notes = " ".join(p for p in parts if p).strip() or None
+        suggestion = suggest_cad_from_product(product.name, product.category, notes)
+        if suggestion:
+            model_type, parameters = suggestion
+            generation_method = "llm"
+        # else fall back to payload model_type and parameters
+
+    if model_type not in MODEL_TYPES:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid model_type. Choose from: {MODEL_TYPES}",
         )
 
     try:
-        code = generate_scad_code(payload.model_type, payload.parameters or {})
+        code = generate_scad_code(model_type, parameters)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -100,17 +120,17 @@ async def create_cad_model(
     version = len(existing) + 1
 
     scad_path = save_scad_file(product_id, version, code, product.slug)
-    parameters_json = json.dumps(payload.parameters) if payload.parameters else None
+    parameters_json = json.dumps(parameters)
 
     cad = CadModel(
         product_id=product_id,
         version=version,
-        model_type=payload.model_type,
+        model_type=model_type,
         parameters_json=parameters_json,
         scad_code=code,
         scad_file_path=str(scad_path),
         stl_file_path=None,
-        generation_method="template",
+        generation_method=generation_method,
     )
     db.add(cad)
     product.status = ProductStatus.CAD_GENERATED

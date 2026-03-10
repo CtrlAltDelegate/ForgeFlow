@@ -75,25 +75,27 @@ export function CadGenerator() {
       .catch((e) => setError(e.message))
   }, [selectedProductId])
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (useAi: boolean = false) => {
     if (selectedProductId == null) {
       setError('Select a product first.')
       return
     }
     setGenerating(true)
     setError(null)
-    setLog((prev) => [...prev, `Generating ${modelType}...`])
+    setLog((prev) => [...prev, useAi ? 'Generating with AI (Etsy-style)...' : `Generating ${modelType}...`])
     try {
       const body: CadCreate = {
         model_type: modelType,
         parameters: Object.fromEntries(
           Object.entries(parameters).filter(([, v]) => v != null)
         ) as Record<string, number>,
+        use_ai: useAi || undefined,
       }
       const created = await api.cad.create(selectedProductId, body)
       setCadModels((prev) => [created, ...prev])
       setSelectedCad(created)
-      setLog((prev) => [...prev, `Created CAD model v${created.version} (${created.scad_file_path || 'saved'}).`])
+      const method = created.generation_method === 'llm' ? ' (AI-chosen template)' : ''
+      setLog((prev) => [...prev, `Created CAD model v${created.version}${method} (${created.scad_file_path || 'saved'}).`])
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Generate failed'
       setError(message)
@@ -231,11 +233,19 @@ export function CadGenerator() {
 
           <button
             type="button"
-            onClick={handleGenerate}
+            onClick={() => handleGenerate(false)}
             disabled={generating || selectedProductId == null}
             className="w-full px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white font-medium disabled:opacity-50"
           >
             {generating ? 'Generating…' : 'Generate & save'}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleGenerate(true)}
+            disabled={generating || selectedProductId == null}
+            className="w-full px-4 py-2 rounded-md border border-[var(--forge-accent)] text-[var(--forge-accent)] font-medium disabled:opacity-50 mt-2"
+          >
+            {generating ? 'Generating…' : 'Generate with AI (Etsy-style)'}
           </button>
         </div>
 

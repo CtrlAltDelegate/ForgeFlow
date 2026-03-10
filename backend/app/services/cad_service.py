@@ -2,10 +2,12 @@
 CAD generation service: template-based OpenSCAD code and file export.
 
 Supports: bracket, clip, holder, spacer, mount, tray, cable_organizer.
-OpenSCAD CLI is used for STL export when available.
+When FORGEFLOW_CAD_LLM_API_KEY is set (Anthropic), can suggest template + parameters
+from product/category to match Etsy best-seller style. OpenSCAD CLI for STL export.
 """
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -206,6 +208,78 @@ _GENERATORS: dict[str, callable] = {
     "tray": _tray_code,
     "cable_organizer": _cable_organizer_code,
 }
+
+# Parameter keys per template (for LLM prompt)
+_TEMPLATE_PARAMS: dict[str, list[str]] = {
+    "bracket": ["width", "height", "thickness", "hole_diameter"],
+    "clip": ["width", "height", "thickness", "inner_radius"],
+    "holder": ["width", "depth", "height", "wall_thickness"],
+    "spacer": ["outer_diameter", "inner_diameter", "height"],
+    "mount": ["width", "height", "thickness", "hole_diameter"],
+    "tray": ["width", "depth", "height", "wall_thickness"],
+    "cable_organizer": ["length", "width", "height", "channel_radius"],
+}
+
+
+def suggest_cad_from_product(
+    product_name: str,
+    category: str,
+    notes: str | None = None,
+) -> tuple[str, dict[str, Any]] | None:
+    """
+    Use Claude to suggest a template type and parameters suited to this product/category,
+    aiming for designs that match popular/Etsy best-seller style 3D-printed products.
+    Returns (model_type, parameters) or None if LLM is not configured or fails.
+    """
+    if not settings.cad_llm_api_key or settings.cad_llm_provider != "anthropic":
+        return None
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=settings.cad_llm_api_key)
+        templates_desc = "\n".join(
+            f"- {t}: params {_TEMPLATE_PARAMS.get(t, [])}"
+            for t in MODEL_TYPES
+        )
+        prompt = f"""You are helping design 3D-printable products that match best sellers on Etsy for a given category.
+
+Available template types and their parameters (all dimensions in mm):
+{templates_desc}
+
+Product name: {product_name}
+Category: {category}
+{f'Research/notes: {notes}' if notes else ''}
+
+Choose the single best template type and concrete parameter values (in mm) so the result looks like a popular, functional product in this category—e.g. desk organizers should have useful compartments/channels, trays should have sensible proportions, clips/holders should fit common items. Avoid a plain box; prefer the template that adds clear value (holes, channels, dividers, etc.).
+
+Respond with only a JSON object, no markdown, with exactly two keys:
+- "model_type": one of {json.dumps(MODEL_TYPES)}
+- "parameters": an object with the parameter names and numeric values for that template (e.g. "width": 80, "height": 25)
+
+Example for a cable desk organizer: {{"model_type": "cable_organizer", "parameters": {{"length": 120, "width": 35, "height": 25, "channel_radius": 6}}}}
+Example for a desk tray: {{"model_type": "tray", "parameters": {{"width": 200, "depth": 100, "height": 40, "wall_thickness": 3}}}}"""
+
+        msg = client.messages.create(
+            model=settings.cad_llm_model,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = (msg.content[0].text if msg.content else "").strip() if isinstance(msg.content, list) else ""
+        if not text:
+            return None
+        # Strip markdown code block if present
+        if "```" in text:
+            text = re.sub(r"^```(?:json)?\s*", "", text).strip()
+            text = re.sub(r"\s*```$", "", text).strip()
+        data = json.loads(text)
+        model_type = str(data.get("model_type", "")).strip().lower()
+        params = data.get("parameters")
+        if model_type not in _GENERATORS or not isinstance(params, dict):
+            return None
+        # Ensure all parameter values are numbers
+        parameters = {k: float(v) for k, v in params.items() if isinstance(v, (int, float))}
+        return (model_type, parameters)
+    except Exception:
+        return None
 
 
 def generate_scad_code(model_type: str, parameters: dict[str, Any]) -> str:

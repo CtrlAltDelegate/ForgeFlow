@@ -23,8 +23,9 @@ class CadParameters(BaseModel):
 
 
 class CadCreate(BaseModel):
-    model_type: str
+    model_type: str = "tray"  # used when use_ai is False or LLM fallback
     parameters: dict[str, Any] | None = None
+    use_ai: bool = False  # when True, Claude suggests template + params from product/category (Etsy-style)
 
 
 class CadModelResponse(BaseModel):

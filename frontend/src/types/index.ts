@@ -189,6 +189,8 @@ export interface CadModelResponse {
 export interface CadCreate {
   model_type: string
   parameters?: Record<string, number>
+  /** When true, Claude suggests template + params from product/category (Etsy best-seller style). */
+  use_ai?: boolean
 }
 
 export interface CadExportResult {
