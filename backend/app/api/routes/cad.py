@@ -5,6 +5,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -187,3 +188,43 @@ async def export_cad_to_stl(
             stl_file_path=cad.stl_file_path,
         )
     return CadExportResult(success=False, message=message)
+
+
+@router.get("/{product_id}/cad/{cad_id}/stl")
+async def download_stl(
+    product_id: int,
+    cad_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Stream the exported STL file for download. Use in 3D printer software (slicer)."""
+    result = await db.execute(
+        select(CadModel).where(CadModel.id == cad_id, CadModel.product_id == product_id)
+    )
+    cad = result.scal_one_or_none()
+    if not cad:
+        raise HTTPException(status_code=404, detail="CAD model not found")
+    if not cad.stl_file_path:
+        raise HTTPException(
+            status_code=404,
+            detail="STL not exported yet. Click 'Export STL' first.",
+        )
+    # Resolve path: stored path may be relative or absolute (e.g. in Docker)
+    stored = Path(cad.stl_file_path)
+    stl_path = settings.stl_dir / stored.name if not stored.is_absolute() else stored
+    if not stl_path.exists():
+        stl_path = stored
+    if not stl_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="STL file not found on server (e.g. after redeploy). Re-export STL.",
+        )
+    # Suggest a clean filename for download (product slug + version)
+    product_result = await db.execute(select(Product).where(Product.id == product_id))
+    product = product_result.scalar_one_or_none()
+    slug = product.slug if product else f"product-{product_id}"
+    download_name = f"{slug}_v{cad.version}.stl"
+    return FileResponse(
+        path=str(stl_path),
+        filename=download_name,
+        media_type="application/octet-stream",
+    )

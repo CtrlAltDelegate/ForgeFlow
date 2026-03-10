@@ -88,8 +88,9 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 ### Phase 3 (CAD)
 
 - **CAD service** (`app/services/cad_service.py`): Template-based OpenSCAD code generation for **bracket**, **clip**, **holder**, **spacer**, **mount**, **tray**, **cable_organizer**. Each template accepts dimensions (width, height, thickness, hole_diameter, etc.). Saves `.scad` files under `data/scad/` and records paths + code in DB. **OpenSCAD CLI** integration: runs `openscad -o output.stl input.scad` for STL export (set `FORGEFLOW_OPENSCAD_PATH` if not on PATH).
-- **API**: `GET /api/products/model-types`, `GET/POST /api/products/{id}/cad`, `GET /api/products/{id}/cad/{cad_id}`, `POST /api/products/{id}/cad/{cad_id}/export-stl`.
-- **Frontend**: **CAD Generator** page (`/cad`): product selector, template type, parameter inputs (mm), “Generate & save”, generated code view, list of saved models per product, “Export STL” per model, activity log. Product Detail “Generate CAD” links to `/cad?product={slug}`.
+- **API**: `GET /api/products/model-types`, `GET/POST /api/products/{id}/cad`, `GET /api/products/{id}/cad/{cad_id}`, `POST /api/products/{id}/cad/{cad_id}/export-stl`, `GET /api/products/{id}/cad/{cad_id}/stl` (download STL file).
+- **Frontend**: **CAD Generator** page (`/cad`): product selector, template type, parameter inputs (mm), “Generate & save”, generated code view, list of saved models per product, “Export STL” then “Download STL” to open in 3D printer/slicer software. Product Detail “Generate CAD” links to `/cad?product={slug}`.
+- **STL viewing**: Download the STL and open it in your slicer (OrcaSlicer, Cura, Bambu Studio, etc.). An in-app 3D preview is optional/future.
 
 ### Phase 4 (Manufacturing + Listings)
 
@@ -111,8 +112,8 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ## What’s mocked vs live
 
-- **Live**: Full pipeline: database, product/research CRUD, opportunity scoring, CSV import, dashboard, **CAD** (templates + SCAD save + optional OpenSCAD STL), **manufacturing simulation** (heuristic), **listing generation** (templates), all UI pages.
-- **Optional / future**: OpenSCAD CLI (STL export). Slicer CLI (replace heuristic with real slicer). LLM provider (replace template listing with AI-generated copy).
+- **Live**: Full pipeline: database, product/research CRUD, opportunity scoring, CSV import, dashboard, **CAD** (templates + SCAD save + OpenSCAD STL export + STL download), **manufacturing simulation** (heuristic), **listing generation** (templates), all UI pages.
+- **Optional / future**: **CAD LLM** (choose template + params from product description). **Listing LLM** (AI-generated listing copy). **Slicer CLI** (replace heuristic with OrcaSlicer/Bambu Studio). **In-app STL viewer** (browser 3D preview). On cloud deploys, `data/scad` and `data/stl` are ephemeral—re-generate CAD and re-export STL after redeploys if needed.
 
 ---
 

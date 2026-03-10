@@ -146,7 +146,7 @@ export function CadGenerator() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold text-[var(--forge-text)]">CAD Generator</h1>
         <p className="text-[var(--forge-text-muted)] mt-1">
-          Generate OpenSCAD models from templates and export STL
+          Generate OpenSCAD models from templates and export STL. Use &quot;Export STL&quot; then &quot;Download STL&quot; to open the file in your 3D printer software (slicer).
         </p>
       </header>
 
@@ -283,8 +283,14 @@ export function CadGenerator() {
                     >
                       {exporting === c.id ? 'Exporting…' : 'Export STL'}
                     </button>
-                    {c.stl_file_path && (
-                      <span className="text-xs text-green-400">STL saved</span>
+                    {c.stl_file_path && selectedProductId != null && (
+                      <a
+                        href={api.cad.stlDownloadUrl(selectedProductId, c.id)}
+                        className="text-xs text-green-400 hover:underline"
+                        download
+                      >
+                        Download STL
+                      </a>
                     )}
                   </li>
                 ))}

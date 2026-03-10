@@ -78,6 +78,9 @@ export const api = {
       request<import('../types').CadModelResponse>(`/products/${productId}/cad/${cadId}`),
     exportStl: (productId: number, cadId: number) =>
       request<import('../types').CadExportResult>(`/products/${productId}/cad/${cadId}/export-stl`, { method: 'POST' }),
+    /** URL to download the STL file (after Export STL). Open in 3D printer/slicer software. */
+    stlDownloadUrl: (productId: number, cadId: number) =>
+      `${API_BASE}/products/${productId}/cad/${cadId}/stl`,
   },
   simulation: {
     list: (productId: number) =>
