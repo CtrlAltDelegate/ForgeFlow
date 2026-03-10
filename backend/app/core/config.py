@@ -1,4 +1,5 @@
 """Application configuration."""
+import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -32,6 +33,11 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def _normalize_database_url(cls, v: str | None) -> str:
+        # Use platform-injected DATABASE_URL (e.g. Railway, Render) when FORGEFLOW_DATABASE_URL is not set
+        if v is None or (isinstance(v, str) and not (v or "").strip()):
+            env_url = os.environ.get("DATABASE_URL")
+            if env_url and isinstance(env_url, str) and "postgres" in env_url.lower():
+                v = env_url
         if v is None or not isinstance(v, str):
             return _DEFAULT_SQLITE_URL
         raw = v.strip()
@@ -44,12 +50,18 @@ class Settings(BaseSettings):
         return raw
 
     def get_database_url(self) -> str:
-        """Return the URL to use: built from PG_* if all set (Railway), else normalized database_url."""
-        parts = [self.pg_host.strip(), self.pg_port.strip(), self.pg_user.strip(), self.pg_password, self.pg_database.strip()]
-        if all(parts) and "${{" not in self.pg_password:
-            user = quote_plus(self.pg_user.strip())
-            password = quote_plus(self.pg_password)
-            return f"postgresql+asyncpg://{user}:{password}@{self.pg_host.strip()}:{self.pg_port.strip()}/{self.pg_database.strip()}"
+        """Return the URL to use: built from PG_* (or PGHOST etc.) if all set, else normalized database_url."""
+        # Support both FORGEFLOW_PG_* and platform-native PG* (e.g. Railway injects PGHOST, PGPASSWORD, etc.)
+        host = (self.pg_host or "").strip() or os.environ.get("PGHOST", "")
+        port = (self.pg_port or "").strip() or os.environ.get("PGPORT", "")
+        user = (self.pg_user or "").strip() or os.environ.get("PGUSER", "")
+        password = (self.pg_password or "") or os.environ.get("PGPASSWORD", "")
+        database = (self.pg_database or "").strip() or os.environ.get("PGDATABASE", "")
+        parts = [host, port, user, password, database]
+        if all(parts) and "${{" not in (password or ""):
+            user_enc = quote_plus(user)
+            password_enc = quote_plus(password)
+            return f"postgresql+asyncpg://{user_enc}:{password_enc}@{host}:{port}/{database}"
         return self.database_url
 
     def get_sqlite_url(self) -> str:

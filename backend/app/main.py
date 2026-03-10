@@ -22,7 +22,8 @@ async def lifespan(app: FastAPI):
         if "password" in err_msg or "authentication" in err_msg or "connection" in err_msg or "invalid" in err_msg:
             logger.warning(
                 "Postgres connection failed (%s). Falling back to SQLite. Data will not persist across redeploys. "
-                "Update FORGEFLOW_DATABASE_URL with a fresh URL from Postgres → Variables.",
+                "Fix: set FORGEFLOW_DATABASE_URL to a fresh URL, or set FORGEFLOW_PG_HOST, FORGEFLOW_PG_PORT, "
+                "FORGEFLOW_PG_USER, FORGEFLOW_PG_PASSWORD, FORGEFLOW_PG_DATABASE (or use platform vars DATABASE_URL / PGHOST, etc.). See README.",
                 e,
             )
             fallback_to_sqlite()
