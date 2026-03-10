@@ -232,9 +232,10 @@ The frontend uses `VITE_API_URL` for API requests in production; local dev uses 
 
 - **Railway** runs the API; Netlify’s frontend calls it via `VITE_API_URL`.
 - **Root directory:** `backend`.
-- **Deploy with Dockerfile (recommended):** Railway will detect `backend/Dockerfile`, which installs OpenSCAD so **STL export** works in production. No extra env vars needed for OpenSCAD.
-- If you don’t use the Dockerfile: Build `pip install -r requirements.txt`, Start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Then OpenSCAD won’t be available in the container (CAD generation and .scad save still work; only STL export is disabled).
-- **Database:** Add a Postgres add-on and set `FORGEFLOW_DATABASE_URL` to the provided URL for persistent data. Without it, SQLite in the container is used and may not persist across redeploys.
+- **Deploy with Dockerfile (recommended):** Railway will detect `backend/Dockerfile`, which installs OpenSCAD and uses `run.sh` so the app listens on Railway’s `PORT`. Don’t set a custom **Start Command** in Railway so the Dockerfile `CMD` is used.
+- If you don’t use the Dockerfile: Build `pip install -r requirements.txt`, Start **`./run.sh`** (or `sh run.sh`) so `PORT` is read from the environment. Using `--port $PORT` directly can pass the literal `$PORT` and fail.
+- **Database:** Add a Postgres add-on and set `FORGEFLOW_DATABASE_URL` to the provided URL for persistent data.
+- **CORS:** Add your Netlify frontend origin to `FORGEFLOW_CORS_ORIGINS` (e.g. `https://forgeflow-dashboard.netlify.app`) so the browser can call the API.
 
 ---
 

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app,https://forgeflow-dashboard.netlify.app"
 
     # Database: default is absolute path in backend folder so data persists across restarts.
     # For Postgres (e.g. Railway), set FORGEFLOW_DATABASE_URL to the Postgres URL (postgresql:// or postgresql+asyncpg://).

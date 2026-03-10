@@ -12,10 +12,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY pyproject.toml .
+COPY run.sh .
+RUN chmod +x run.sh
 
 # Default: OpenSCAD is on PATH after apt install
 ENV FORGEFLOW_OPENSCAD_PATH=openscad
 
 EXPOSE 8080
-# Use PORT so Railway (and others) can assign the port at runtime
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# run.sh reads PORT from env (Railway sets this at runtime)
+CMD ["./run.sh"]
