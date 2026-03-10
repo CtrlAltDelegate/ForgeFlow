@@ -24,12 +24,18 @@ app = FastAPI(
 )
 
 _origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+# Ensure Netlify frontend is allowed if present in default list (in case Railway env overrides and omits it)
+_netlify_origins = ["https://forgeflowdashboard.netlify.app", "https://forgeflow-dashboard.netlify.app"]
+for origin in _netlify_origins:
+    if origin not in _origins:
+        _origins.append(origin)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 app.include_router(api_router, prefix="/api")
