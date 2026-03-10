@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app,https://forgeflow-dashboard.netlify.app"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
 
     # Database: either set DATABASE_URL or (on Railway) set PG_HOST, PG_PORT, PG_USER, PG_PASSWORD, PG_DATABASE
     # so the URL is built from current credentials and password auth works.
@@ -51,6 +51,10 @@ class Settings(BaseSettings):
             password = quote_plus(self.pg_password)
             return f"postgresql+asyncpg://{user}:{password}@{self.pg_host.strip()}:{self.pg_port.strip()}/{self.pg_database.strip()}"
         return self.database_url
+
+    def get_sqlite_url(self) -> str:
+        """Return the default SQLite URL (for fallback when Postgres fails)."""
+        return _DEFAULT_SQLITE_URL
 
     # Paths (relative to project root or absolute)
     data_dir: Path = Path("./data")

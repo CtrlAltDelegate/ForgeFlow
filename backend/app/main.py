@@ -3,15 +3,32 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import logging
+
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.database import init_db, fallback_to_sqlite
 from app.api.routes import api_router
+
+logger = logging.getLogger("uvicorn.error")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Create DB tables on startup."""
-    await init_db()
+    """Create DB tables on startup. If Postgres fails (e.g. invalid password), fall back to SQLite so the app still starts."""
+    try:
+        await init_db()
+    except Exception as e:
+        err_msg = str(e).lower()
+        if "password" in err_msg or "authentication" in err_msg or "connection" in err_msg or "invalid" in err_msg:
+            logger.warning(
+                "Postgres connection failed (%s). Falling back to SQLite. Data will not persist across redeploys. "
+                "Update FORGEFLOW_DATABASE_URL with a fresh URL from Postgres → Variables.",
+                e,
+            )
+            fallback_to_sqlite()
+            await init_db()
+        else:
+            raise
     yield
     # shutdown if needed
 

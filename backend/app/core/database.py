@@ -21,6 +21,22 @@ AsyncSessionLocal = async_sessionmaker(
 Base = declarative_base()
 
 
+def fallback_to_sqlite() -> None:
+    """Replace engine and session with SQLite so the app can start when Postgres fails."""
+    global engine, AsyncSessionLocal
+    engine = create_async_engine(
+        settings.get_sqlite_url(),
+        echo=settings.debug,
+    )
+    AsyncSessionLocal = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency that yields a database session."""
     async with AsyncSessionLocal() as session:
