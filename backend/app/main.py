@@ -21,12 +21,26 @@ def _log_db_source() -> None:
     pg_host_present = bool((settings.pg_host or "").strip() or os.environ.get("PGHOST", ""))
     forgeflow_db_url_present = bool(os.environ.get("FORGEFLOW_DATABASE_URL", ""))
 
+    # Check for FORGEFLOW_PG_* overrides (these take precedence over auto-injected PG vars)
+    forgeflow_pg_overrides = {
+        k: "set" for k in ("FORGEFLOW_PG_HOST", "FORGEFLOW_PG_PORT", "FORGEFLOW_PG_USER",
+                           "FORGEFLOW_PG_PASSWORD", "FORGEFLOW_PG_DATABASE")
+        if os.environ.get(k, "").strip()
+    }
+
     logger.info(
-        "DB env vars present: DATABASE_URL=%s  PGHOST=%s  FORGEFLOW_DATABASE_URL=%s",
+        "DB env vars present: DATABASE_URL=%s  PGHOST=%s  FORGEFLOW_DATABASE_URL=%s  FORGEFLOW_PG_*=%s",
         "set" if raw_db_url else "not set",
         "set" if pg_host_present else "not set",
         "set" if forgeflow_db_url_present else "not set",
+        ",".join(forgeflow_pg_overrides) if forgeflow_pg_overrides else "none",
     )
+    if forgeflow_pg_overrides:
+        logger.warning(
+            "FORGEFLOW_PG_* overrides are set (%s) and will take precedence over Railway-injected "
+            "PGHOST/PGPASSWORD etc. If these contain stale credentials, delete them from Railway Variables.",
+            ", ".join(forgeflow_pg_overrides),
+        )
 
     # Detect unresolved Railway reference variables (e.g. ${{Postgres.DATABASE_URL}})
     if raw_db_url and "${{" in raw_db_url:
