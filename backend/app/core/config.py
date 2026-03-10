@@ -18,16 +18,25 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app,https://forgeflow-dashboard.netlify.app"
 
     # Database: default is absolute path in backend folder so data persists across restarts.
-    # For Postgres (e.g. Railway), set FORGEFLOW_DATABASE_URL to the Postgres URL (postgresql:// or postgresql+asyncpg://).
+    # For Postgres (e.g. Railway), set FORGEFLOW_DATABASE_URL to the Postgres URL (not a variable reference).
     database_url: str = f"sqlite+aiosqlite:///{_DEFAULT_DB_PATH.resolve().as_posix()}"
 
     @field_validator("database_url", mode="before")
     @classmethod
-    def _normalize_postgres_url(cls, v: str) -> str:
-        """Use asyncpg driver for Postgres URLs so Railway's postgresql:// URL works as-is."""
-        if v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return v
+    def _normalize_database_url(cls, v: str | None) -> str:
+        default = f"sqlite+aiosqlite:///{_DEFAULT_DB_PATH.resolve().as_posix()}"
+        if v is None or not isinstance(v, str):
+            return default
+        raw = v.strip()
+        # Unresolved Railway ref (e.g. ${{Postgres.DATABASE_URL}}) or empty -> use SQLite so app starts
+        if not raw or "${{" in raw or (raw.startswith("$") and "://" not in raw):
+            return default
+        # Use asyncpg for Postgres
+        if raw.startswith("postgres://") and not raw.startswith("postgresql+"):
+            return "postgresql+asyncpg://" + raw[11:]
+        if raw.startswith("postgresql://") and not raw.startswith("postgresql+asyncpg://"):
+            return raw.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return raw
 
     # Paths (relative to project root or absolute)
     data_dir: Path = Path("./data")

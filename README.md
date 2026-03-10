@@ -234,7 +234,7 @@ The frontend uses `VITE_API_URL` for API requests in production; local dev uses 
 - **Root directory:** `backend`.
 - **Deploy with Dockerfile (recommended):** Railway will detect `backend/Dockerfile`, which installs OpenSCAD and uses `run.sh` so the app listens on Railway’s `PORT`. Don’t set a custom **Start Command** in Railway so the Dockerfile `CMD` is used.
 - If you don’t use the Dockerfile: Build `pip install -r requirements.txt`, Start **`./run.sh`** (or `sh run.sh`) so `PORT` is read from the environment. Using `--port $PORT` directly can pass the literal `$PORT` and fail.
-- **Database:** Add a Postgres add-on and set `FORGEFLOW_DATABASE_URL` to the provided URL for persistent data.
+- **Database:** Add a Postgres add-on and set `FORGEFLOW_DATABASE_URL` to the **actual** Postgres URL (e.g. from Postgres → Variables → `DATABASE_URL`). Use the copied URL value, not a reference like `${{Postgres.DATABASE_URL}}`, or the app may fail to parse the URL and fall back to SQLite.
 - **CORS:** Add your Netlify frontend origin to `FORGEFLOW_CORS_ORIGINS` (e.g. `https://forgeflow-dashboard.netlify.app`) so the browser can call the API.
 
 ---
