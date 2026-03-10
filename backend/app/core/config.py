@@ -1,5 +1,6 @@
 """Application configuration."""
 from pathlib import Path
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 # Resolve backend directory so DB path is always the same regardless of CWD
@@ -16,9 +17,17 @@ class Settings(BaseSettings):
     # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
 
-    # Database: default is absolute path in backend folder so data persists across restarts
-    # no matter where the server is started from. Override with FORGEFLOW_DATABASE_URL in .env.
+    # Database: default is absolute path in backend folder so data persists across restarts.
+    # For Postgres (e.g. Railway), set FORGEFLOW_DATABASE_URL to the Postgres URL (postgresql:// or postgresql+asyncpg://).
     database_url: str = f"sqlite+aiosqlite:///{_DEFAULT_DB_PATH.resolve().as_posix()}"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def _normalize_postgres_url(cls, v: str) -> str:
+        """Use asyncpg driver for Postgres URLs so Railway's postgresql:// URL works as-is."""
+        if v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     # Paths (relative to project root or absolute)
     data_dir: Path = Path("./data")
