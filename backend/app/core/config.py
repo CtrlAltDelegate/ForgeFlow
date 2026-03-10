@@ -21,8 +21,9 @@ class Settings(BaseSettings):
     # CORS: comma-separated origins (e.g. https://yoursite.netlify.app)
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,https://forgeflowdashboard.netlify.app"
 
-    # Database: either set DATABASE_URL or (on Railway) set PG_HOST, PG_PORT, PG_USER, PG_PASSWORD, PG_DATABASE
-    # so the URL is built from current credentials and password auth works.
+    # Database: either set DATABASE_URL (no FORGEFLOW_ prefix, picked up by get_database_url()) or
+    # set FORGEFLOW_PG_HOST/PORT/USER/PASSWORD/DATABASE so the URL is built from current credentials.
+    # FORGEFLOW_DATABASE_URL is a last-resort override (e.g. for local dev).
     database_url: str = _DEFAULT_SQLITE_URL
     pg_host: str = ""
     pg_port: str = ""
@@ -33,12 +34,10 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def _normalize_database_url(cls, v: str | None) -> str:
-        # Use platform-injected DATABASE_URL (e.g. Railway, Render) when FORGEFLOW_DATABASE_URL is not set
+        # This validator runs when FORGEFLOW_DATABASE_URL is explicitly set.
+        # When it is absent, pydantic uses the default _DEFAULT_SQLITE_URL without calling this;
+        # the DATABASE_URL / PG_* fallback is handled entirely by get_database_url() at call time.
         if v is None or (isinstance(v, str) and not (v or "").strip()):
-            env_url = os.environ.get("DATABASE_URL")
-            if env_url and isinstance(env_url, str) and "postgres" in env_url.lower():
-                v = env_url
-        if v is None or not isinstance(v, str):
             return _DEFAULT_SQLITE_URL
         raw = v.strip()
         if not raw or "${{" in raw or (raw.startswith("$") and "://" not in raw):
@@ -61,22 +60,33 @@ class Settings(BaseSettings):
         return url
 
     def get_database_url(self) -> str:
-        """Return the URL to use: DATABASE_URL (if set) else built from PG_* else database_url."""
-        # Prefer platform-injected DATABASE_URL (Railway/Render link Postgres and set this on the service)
-        env_url = os.environ.get("DATABASE_URL")
-        if env_url and isinstance(env_url, str) and "postgres" in env_url.lower() and "${{" not in env_url:
-            return self._normalize_url(env_url.strip())
-        # Else build from FORGEFLOW_PG_* or platform PG* (PGHOST, PGPASSWORD, etc.)
-        host = (self.pg_host or "").strip() or os.environ.get("PGHOST", "")
-        port = (self.pg_port or "").strip() or os.environ.get("PGPORT", "")
-        user = (self.pg_user or "").strip() or os.environ.get("PGUSER", "")
-        password = (self.pg_password or "") or os.environ.get("PGPASSWORD", "")
-        database = (self.pg_database or "").strip() or os.environ.get("PGDATABASE", "")
-        parts = [host, port, user, password, database]
-        if all(parts) and "${{" not in (password or ""):
+        """Return the URL to use: DATABASE_URL (if set) else built from PG_* else database_url.
+
+        Priority (highest first):
+        1. DATABASE_URL env var -- Railway/Render inject this when a Postgres service is linked.
+        2. PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE (or FORGEFLOW_PG_* equivalents).
+        3. FORGEFLOW_DATABASE_URL (this Settings field) -- last resort / local override.
+        """
+        # 1. Prefer platform-injected DATABASE_URL (e.g. set via Railway service variable reference)
+        env_url = os.environ.get("DATABASE_URL", "").strip()
+        if env_url and "postgres" in env_url.lower() and "${{" not in env_url:
+            return self._normalize_url(env_url)
+
+        # 2. Build from individual PG vars -- Railway also injects these automatically
+        host = (self.pg_host or "").strip() or os.environ.get("PGHOST", "").strip()
+        port = (self.pg_port or "").strip() or os.environ.get("PGPORT", "").strip()
+        user = (self.pg_user or "").strip() or os.environ.get("PGUSER", "").strip()
+        password = (self.pg_password or "").strip() or os.environ.get("PGPASSWORD", "").strip()
+        database = (self.pg_database or "").strip() or os.environ.get("PGDATABASE", "").strip()
+        if host and port and user and password and database:
+            # Guard against any PG var that somehow contains an unresolved reference
+            if any("${{" in v for v in (host, port, user, password, database)):
+                return self.database_url
             user_enc = quote_plus(user)
             password_enc = quote_plus(password)
             return f"postgresql+asyncpg://{user_enc}:{password_enc}@{host}:{port}/{database}"
+
+        # 3. Fall back to FORGEFLOW_DATABASE_URL (or the SQLite default if that wasn't set either)
         return self.database_url
 
     def get_sqlite_url(self) -> str:
