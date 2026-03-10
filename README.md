@@ -243,7 +243,7 @@ The frontend uses `VITE_API_URL` for API requests in production; local dev uses 
     - `FORGEFLOW_PG_DATABASE` → `${{Postgres.PGDATABASE}}`
   - Replace `Postgres` with your Postgres service name if different. The app will build the Postgres URL from these; each is resolved at runtime so the password is always current.
   - Alternatively you can set `FORGEFLOW_DATABASE_URL` to the full URL (or `${{Postgres.DATABASE_URL}}`), but if that keeps failing with invalid password, use the five PG_* variables above.
-- **CORS:** Add your Netlify frontend origin to `FORGEFLOW_CORS_ORIGINS` (e.g. `https://forgeflow-dashboard.netlify.app`) so the browser can call the API.
+- **CORS:** Add your Netlify frontend origin to `FORGEFLOW_CORS_ORIGINS` (e.g. `https://forgeflowdashboard.netlify.app`) so the browser can call the API.
 
 ---
 
