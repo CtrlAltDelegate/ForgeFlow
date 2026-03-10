@@ -49,9 +49,24 @@ class Settings(BaseSettings):
             return raw.replace("postgresql://", "postgresql+asyncpg://", 1)
         return raw
 
+    @classmethod
+    def _normalize_url(cls, url: str) -> str:
+        """Normalize a postgres URL to postgresql+asyncpg:// form."""
+        if not url or "postgres" not in url.lower():
+            return url
+        if url.startswith("postgres://"):
+            return "postgresql+asyncpg://" + url[11:]
+        if url.startswith("postgresql://") and "postgresql+asyncpg://" not in url:
+            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+
     def get_database_url(self) -> str:
-        """Return the URL to use: built from PG_* (or PGHOST etc.) if all set, else normalized database_url."""
-        # Support both FORGEFLOW_PG_* and platform-native PG* (e.g. Railway injects PGHOST, PGPASSWORD, etc.)
+        """Return the URL to use: DATABASE_URL (if set) else built from PG_* else database_url."""
+        # Prefer platform-injected DATABASE_URL (Railway/Render link Postgres and set this on the service)
+        env_url = os.environ.get("DATABASE_URL")
+        if env_url and isinstance(env_url, str) and "postgres" in env_url.lower() and "${{" not in env_url:
+            return self._normalize_url(env_url.strip())
+        # Else build from FORGEFLOW_PG_* or platform PG* (PGHOST, PGPASSWORD, etc.)
         host = (self.pg_host or "").strip() or os.environ.get("PGHOST", "")
         port = (self.pg_port or "").strip() or os.environ.get("PGPORT", "")
         user = (self.pg_user or "").strip() or os.environ.get("PGUSER", "")

@@ -12,9 +12,27 @@ from app.api.routes import api_router
 logger = logging.getLogger("uvicorn.error")
 
 
+def _log_db_source() -> None:
+    """Log which DB URL source is in use (no secrets). Helps debug Postgres auth failures."""
+    url = settings.get_database_url()
+    if "postgresql" in url:
+        # Log host and user only (no password)
+        try:
+            from urllib.parse import urlparse
+            p = urlparse(url)
+            user = p.username or "(none)"
+            host = p.hostname or "(none)"
+            logger.info("Using Postgres: user=%s host=%s (from FORGEFLOW_PG_* or DATABASE_URL)", user, host)
+        except Exception:
+            logger.info("Using Postgres (from FORGEFLOW_PG_* or DATABASE_URL)")
+    else:
+        logger.info("Using SQLite (no Postgres credentials set)")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Create DB tables on startup. If Postgres fails (e.g. invalid password), fall back to SQLite so the app still starts."""
+    _log_db_source()
     try:
         await init_db()
     except Exception as e:
