@@ -1,5 +1,6 @@
 """CAD generation and export API."""
 import json
+import logging
 from pathlib import Path
 
 from sqlalchemy import select
@@ -21,6 +22,7 @@ from app.services.cad_service import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/openscad-available")
@@ -197,34 +199,45 @@ async def download_stl(
     db: AsyncSession = Depends(get_db),
 ):
     """Stream the exported STL file for download. Use in 3D printer software (slicer)."""
-    result = await db.execute(
-        select(CadModel).where(CadModel.id == cad_id, CadModel.product_id == product_id)
-    )
-    cad = result.scal_one_or_none()
-    if not cad:
-        raise HTTPException(status_code=404, detail="CAD model not found")
-    if not cad.stl_file_path:
-        raise HTTPException(
-            status_code=404,
-            detail="STL not exported yet. Click 'Export STL' first.",
+    try:
+        result = await db.execute(
+            select(CadModel).where(CadModel.id == cad_id, CadModel.product_id == product_id)
         )
-    # Resolve path: stored path may be relative or absolute (e.g. in Docker)
-    stored = Path(cad.stl_file_path)
-    stl_path = settings.stl_dir / stored.name if not stored.is_absolute() else stored
-    if not stl_path.exists():
-        stl_path = stored
-    if not stl_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="STL file not found on server (e.g. after redeploy). Re-export STL.",
+        cad = result.scalar_one_or_none()
+        if not cad:
+            raise HTTPException(status_code=404, detail="CAD model not found")
+        if not cad.stl_file_path:
+            raise HTTPException(
+                status_code=404,
+                detail="STL not exported yet. Click 'Export STL' first.",
+            )
+        # Resolve path: stored path may be relative or absolute (e.g. in Docker)
+        stored = Path(cad.stl_file_path)
+        stl_path = settings.stl_dir / stored.name if not stored.is_absolute() else stored
+        if not stl_path.exists():
+            stl_path = stored
+        if not stl_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail="STL file not found on server (e.g. after redeploy). Re-export STL.",
+            )
+        # FileResponse needs an absolute path so streaming works (e.g. on Railway/Docker)
+        stl_path = stl_path.resolve()
+        # Suggest a clean filename for download (product slug + version)
+        product_result = await db.execute(select(Product).where(Product.id == product_id))
+        product = product_result.scalar_one_or_none()
+        slug = (product.slug if product else None) or f"product-{product_id}"
+        download_name = f"{slug}_v{cad.version}.stl"
+        return FileResponse(
+            path=str(stl_path),
+            filename=download_name,
+            media_type="application/octet-stream",
         )
-    # Suggest a clean filename for download (product slug + version)
-    product_result = await db.execute(select(Product).where(Product.id == product_id))
-    product = product_result.scalar_one_or_none()
-    slug = product.slug if product else f"product-{product_id}"
-    download_name = f"{slug}_v{cad.version}.stl"
-    return FileResponse(
-        path=str(stl_path),
-        filename=download_name,
-        media_type="application/octet-stream",
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("STL download failed for product_id=%s cad_id=%s", product_id, cad_id)
+        raise HTTPException(
+            status_code=500,
+            detail=f"STL download failed: {str(e)}. Re-export STL and try again.",
+        ) from e
