@@ -7,6 +7,7 @@ from product/category to match Etsy best-seller style. OpenSCAD CLI for STL expo
 """
 
 import json
+import logging
 import re
 import shutil
 import subprocess
@@ -14,6 +15,8 @@ from pathlib import Path
 from typing import Any
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def check_openscad_available() -> tuple[bool, str]:
@@ -180,21 +183,30 @@ difference() {{
 
 
 def _cable_organizer_code(params: dict[str, Any]) -> str:
-    length = float(params.get("length", 60))
-    width = float(params.get("width", 20))
-    height = float(params.get("height", 15))
-    channel_r = float(params.get("channel_radius", 4))
+    length = float(params.get("length", 80))
+    width = float(params.get("width", 35))
+    height = float(params.get("height", 22))
+    channel_r = float(params.get("channel_radius", 5))
+    # Multiple cable channels through the block (visible grooves, not a plain box)
+    num_channels = max(2, min(6, int(length / (channel_r * 3))))
     return f"""
-// Cable channel
+// Cable desk organizer: base tray with multiple cable channels
 length = {length};
 width = {width};
 height = {height};
 r = {channel_r};
+num_channels = {num_channels};
 
 difference() {{
     cube([length, width, height]);
-    translate([length/4, width/2, height]) cylinder(r=r, h=2, $fn=24);
-    translate([length*3/4, width/2, height]) cylinder(r=r, h=2, $fn=24);
+    // Hollow the base (tray)
+    translate([2, 2, 2]) cube([length-4, width-4, height-1.5]);
+    // Cable channels: cylinders through the long axis (visible from top and sides)
+    step = length / (num_channels + 1);
+    for (i = [1 : num_channels]) {{
+        translate([i * step, width/2, height + 1]) rotate([90, 0, 0])
+            cylinder(r=r, h=width+2, center=true, $fn=24);
+    }}
 }}
 """
 
@@ -231,7 +243,11 @@ def suggest_cad_from_product(
     aiming for designs that match popular/Etsy best-seller style 3D-printed products.
     Returns (model_type, parameters) or None if LLM is not configured or fails.
     """
-    if not settings.cad_llm_api_key or settings.cad_llm_provider != "anthropic":
+    if not settings.cad_llm_api_key:
+        logger.info("CAD LLM skip: FORGEFLOW_CAD_LLM_API_KEY not set")
+        return None
+    if settings.cad_llm_provider != "anthropic":
+        logger.info("CAD LLM skip: FORGEFLOW_CAD_LLM_PROVIDER must be 'anthropic' (got %r)", settings.cad_llm_provider)
         return None
     try:
         import anthropic
@@ -278,7 +294,8 @@ Example for a desk tray: {{"model_type": "tray", "parameters": {{"width": 200, "
         # Ensure all parameter values are numbers
         parameters = {k: float(v) for k, v in params.items() if isinstance(v, (int, float))}
         return (model_type, parameters)
-    except Exception:
+    except Exception as e:
+        logger.warning("CAD LLM suggestion failed: %s", e)
         return None
 
 

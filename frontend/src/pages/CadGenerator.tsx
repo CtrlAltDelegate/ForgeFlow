@@ -94,8 +94,12 @@ export function CadGenerator() {
       const created = await api.cad.create(selectedProductId, body)
       setCadModels((prev) => [created, ...prev])
       setSelectedCad(created)
-      const method = created.generation_method === 'llm' ? ' (AI-chosen template)' : ''
-      setLog((prev) => [...prev, `Created CAD model v${created.version}${method} (${created.scad_file_path || 'saved'}).`])
+      if (useAi && created.generation_method !== 'llm') {
+        setLog((prev) => [...prev, 'AI suggestion unavailable (check FORGEFLOW_CAD_LLM_API_KEY and provider=anthropic). Used template.', `Created CAD model v${created.version} (${created.scad_file_path || 'saved'}).`])
+      } else {
+        const method = created.generation_method === 'llm' ? ' (AI-chosen template)' : ''
+        setLog((prev) => [...prev, `Created CAD model v${created.version}${method} (${created.scad_file_path || 'saved'}).`])
+      }
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Generate failed'
       setError(message)
