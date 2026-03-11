@@ -87,9 +87,9 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ### Phase 3 (CAD)
 
-- **CAD service** (`app/services/cad_service.py`): Template-based OpenSCAD code generation for **bracket**, **clip**, **holder**, **spacer**, **mount**, **tray**, **cable_organizer**. Each template accepts dimensions (width, height, thickness, hole_diameter, etc.). Saves `.scad` files under `data/scad/` and records paths + code in DB. **Generate with AI (Etsy-style)**: when `FORGEFLOW_CAD_LLM_API_KEY` (Anthropic) is set, use **Generate with AI** in the CAD Generator—Claude suggests template and parameters from product/category to match popular best-seller style. **OpenSCAD CLI** integration: runs `openscad -o output.stl input.scad` for STL export (set `FORGEFLOW_OPENSCAD_PATH` if not on PATH).
+- **CAD service** (`app/services/cad_service.py`): **Claude-only** CAD. Claude chooses the design (template + dimensions) from product name, category, and research so it matches Etsy best-seller style. No manual template selection; set `FORGEFLOW_CAD_LLM_API_KEY` (Anthropic). Saves `.scad` under `data/scad/` and records in DB. **OpenSCAD CLI** for STL export (set `FORGEFLOW_OPENSCAD_PATH` if not on PATH).
 - **API**: `GET /api/products/model-types`, `GET/POST /api/products/{id}/cad`, `GET /api/products/{id}/cad/{cad_id}`, `POST /api/products/{id}/cad/{cad_id}/export-stl`, `GET /api/products/{id}/cad/{cad_id}/stl` (download STL file).
-- **Frontend**: **CAD Generator** page (`/cad`): product selector, template type, parameter inputs (mm), “Generate & save”, generated code view, list of saved models per product, “Export STL” then “Download STL” to open in 3D printer/slicer software. Product Detail “Generate CAD” links to `/cad?product={slug}`.
+- **Frontend**: **CAD Generator** page (`/cad`): product selector and **Generate CAD** (Claude designs from product/category). Generated code view, saved models, Export STL and Download STL. Product Detail “Generate CAD” links to `/cad?product={slug}`.
 - **STL viewing**: Download the STL and open it in your slicer (OrcaSlicer, Cura, Bambu Studio, etc.). An in-app 3D preview is optional/future.
 
 ### Phase 4 (Manufacturing + Listings)

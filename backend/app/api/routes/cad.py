@@ -74,7 +74,7 @@ async def create_cad_model(
     payload: CadCreate,
     db: AsyncSession = Depends(get_db),
 ) -> CadModelResponse:
-    """Generate and save a new CAD model. If use_ai=True and CAD LLM is configured, Claude suggests template + params (Etsy best-seller style)."""
+    """Generate and save a new CAD model. Claude designs the shape from product name, category, and research (Etsy best-seller style). No template fallback."""
     result = await db.execute(
         select(Product).where(Product.id == product_id).options(selectinload(Product.research_data))
     )
@@ -85,28 +85,24 @@ async def create_cad_model(
             detail="Product not found. It may have been deleted or the database was reset (e.g. after a redeploy). Refresh the page and select a product again.",
         )
 
-    model_type = payload.model_type
-    parameters = dict(payload.parameters or {})
-    generation_method = "template"
-
-    if payload.use_ai:
-        notes = None
-        if product.research_data:
-            r = product.research_data[0]
-            parts = [r.notes or "", f"Price: {r.listed_price}" if r.listed_price else "", f"Competitors: {r.competitor_count}" if r.competitor_count is not None else ""]
-            notes = " ".join(p for p in parts if p).strip() or None
-        suggestion = suggest_cad_from_product(product.name, product.category, notes)
-        if suggestion:
-            model_type, parameters = suggestion
-            generation_method = "llm"
-        # else fall back to payload model_type and parameters
+    notes = None
+    if product.research_data:
+        r = product.research_data[0]
+        parts = [r.notes or "", f"Price: {r.listed_price}" if r.listed_price else "", f"Competitors: {r.competitor_count}" if r.competitor_count is not None else ""]
+        notes = " ".join(p for p in parts if p).strip() or None
+    suggestion = suggest_cad_from_product(product.name, product.category, notes)
+    if not suggestion:
+        raise HTTPException(
+            status_code=503,
+            detail="CAD generation requires Claude. Set FORGEFLOW_CAD_LLM_API_KEY (Anthropic) and FORGEFLOW_CAD_LLM_PROVIDER=anthropic in your environment.",
+        )
+    model_type, parameters = suggestion
 
     if model_type not in MODEL_TYPES:
         raise HTTPException(
-            status_code=400,
-            detail=f"Invalid model_type. Choose from: {MODEL_TYPES}",
+            status_code=500,
+            detail=f"Claude returned invalid model_type. Choose from: {MODEL_TYPES}",
         )
-
     try:
         code = generate_scad_code(model_type, parameters)
     except ValueError as e:
@@ -130,7 +126,7 @@ async def create_cad_model(
         scad_code=code,
         scad_file_path=str(scad_path),
         stl_file_path=None,
-        generation_method=generation_method,
+        generation_method="llm",
     )
     db.add(cad)
     product.status = ProductStatus.CAD_GENERATED

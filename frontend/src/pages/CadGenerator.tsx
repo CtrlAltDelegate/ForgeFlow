@@ -5,29 +5,12 @@ import { ErrorBanner } from '../components/ErrorBanner'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import type { ProductListItem, CadModelResponse, CadCreate } from '../types'
 
-const PARAM_LABELS: Record<string, string> = {
-  width: 'Width (mm)',
-  height: 'Height (mm)',
-  depth: 'Depth (mm)',
-  length: 'Length (mm)',
-  thickness: 'Thickness (mm)',
-  wall_thickness: 'Wall thickness (mm)',
-  hole_diameter: 'Hole diameter (mm)',
-  inner_diameter: 'Inner diameter (mm)',
-  outer_diameter: 'Outer diameter (mm)',
-  inner_radius: 'Inner radius (mm)',
-  channel_radius: 'Channel radius (mm)',
-}
-
 export function CadGenerator() {
   const [searchParams] = useSearchParams()
   const productSlug = searchParams.get('product')
 
   const [products, setProducts] = useState<ProductListItem[]>([])
-  const [modelTypes, setModelTypes] = useState<string[]>([])
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
-  const [modelType, setModelType] = useState('bracket')
-  const [parameters, setParameters] = useState<Record<string, number | undefined>>({})
   const [cadModels, setCadModels] = useState<CadModelResponse[]>([])
   const [selectedCad, setSelectedCad] = useState<CadModelResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,11 +23,9 @@ export function CadGenerator() {
   useEffect(() => {
     Promise.all([
       api.products.list({ limit: 200 }),
-      api.cad.modelTypes(),
       api.cad.openscadAvailable().catch(() => ({ available: true, message: null })),
-    ]).then(([list, types, openscad]) => {
+    ]).then(([list, openscad]) => {
       setProducts(list)
-      setModelTypes(types)
       if (!openscad.available && openscad.message) {
         setOpenscadWarning(openscad.message)
       }
@@ -75,36 +56,24 @@ export function CadGenerator() {
       .catch((e) => setError(e.message))
   }, [selectedProductId])
 
-  const handleGenerate = async (useAi: boolean = false) => {
+  const handleGenerate = async () => {
     if (selectedProductId == null) {
       setError('Select a product first.')
       return
     }
     setGenerating(true)
     setError(null)
-    setLog((prev) => [...prev, useAi ? 'Generating with AI (Etsy-style)...' : `Generating ${modelType}...`])
+    setLog((prev) => [...prev, 'Claude is designing the 3D model…'])
     try {
-      const body: CadCreate = {
-        model_type: modelType,
-        parameters: Object.fromEntries(
-          Object.entries(parameters).filter(([, v]) => v != null)
-        ) as Record<string, number>,
-        use_ai: useAi || undefined,
-      }
+      const body: CadCreate = {}
       const created = await api.cad.create(selectedProductId, body)
       setCadModels((prev) => [created, ...prev])
       setSelectedCad(created)
-      if (useAi && created.generation_method !== 'llm') {
-        setLog((prev) => [...prev, 'AI suggestion unavailable (check FORGEFLOW_CAD_LLM_API_KEY and provider=anthropic). Used template.', `Created CAD model v${created.version} (${created.scad_file_path || 'saved'}).`])
-      } else {
-        const method = created.generation_method === 'llm' ? ' (AI-chosen template)' : ''
-        setLog((prev) => [...prev, `Created CAD model v${created.version}${method} (${created.scad_file_path || 'saved'}).`])
-      }
+      setLog((prev) => [...prev, `Created v${created.version} (${created.model_type}): ${created.scad_file_path || 'saved'}.`])
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Generate failed'
       setError(message)
       setLog((prev) => [...prev, `Error: ${message}`])
-      // If product not found (e.g. DB reset on Railway), refresh list and clear stale selection
       if (typeof message === 'string' && message.toLowerCase().includes('product not found')) {
         api.products.list({ limit: 200 }).then((list) => {
           setProducts(list)
@@ -152,7 +121,7 @@ export function CadGenerator() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold text-[var(--forge-text)]">CAD Generator</h1>
         <p className="text-[var(--forge-text-muted)] mt-1">
-          Generate OpenSCAD models from templates and export STL. Use &quot;Export STL&quot; then &quot;Download STL&quot; to open the file in your 3D printer software (slicer).
+          Claude designs the 3D model from your product and category (Etsy best-seller style). Export STL then Download to use in your slicer.
         </p>
       </header>
 
@@ -194,62 +163,13 @@ export function CadGenerator() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm text-[var(--forge-text-muted)] mb-1">Template type</label>
-            <select
-              value={modelType}
-              onChange={(e) => setModelType(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-[var(--forge-border)] bg-[var(--forge-surface)] text-[var(--forge-text)]"
-            >
-              {modelTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <span className="block text-sm text-[var(--forge-text-muted)] mb-2">Parameters (mm)</span>
-            <div className="space-y-2">
-              {Object.entries(PARAM_LABELS).map(([key, label]) => (
-                <div key={key}>
-                  <label className="block text-xs text-[var(--forge-text-muted)]">{label}</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={parameters[key] ?? ''}
-                    onChange={(e) => {
-                      const v = e.target.value ? parseFloat(e.target.value) : undefined
-                      setParameters((prev) => {
-                        const next = { ...prev }
-                        if (v === undefined) delete next[key]
-                        else next[key] = v
-                        return next
-                      })
-                    }}
-                    className="w-full px-2 py-1 rounded border border-[var(--forge-border)] bg-[var(--forge-bg)] text-[var(--forge-text)] text-sm"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
           <button
             type="button"
-            onClick={() => handleGenerate(false)}
+            onClick={handleGenerate}
             disabled={generating || selectedProductId == null}
             className="w-full px-4 py-2 rounded-md bg-[var(--forge-accent)] text-white font-medium disabled:opacity-50"
           >
-            {generating ? 'Generating…' : 'Generate & save'}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleGenerate(true)}
-            disabled={generating || selectedProductId == null}
-            className="w-full px-4 py-2 rounded-md border border-[var(--forge-accent)] text-[var(--forge-accent)] font-medium disabled:opacity-50 mt-2"
-          >
-            {generating ? 'Generating…' : 'Generate with AI (Etsy-style)'}
+            {generating ? 'Claude is designing…' : 'Generate CAD'}
           </button>
         </div>
 

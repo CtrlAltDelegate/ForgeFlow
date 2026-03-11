@@ -23,9 +23,9 @@ class CadParameters(BaseModel):
 
 
 class CadCreate(BaseModel):
-    model_type: str = "tray"  # used when use_ai is False or LLM fallback
-    parameters: dict[str, Any] | None = None
-    use_ai: bool = False  # when True, Claude suggests template + params from product/category (Etsy-style)
+    """Body for creating a CAD model. ForgeFlow is Claude-only: design is always from Claude (product + category)."""
+    model_type: str | None = None  # ignored; Claude chooses
+    parameters: dict[str, Any] | None = None  # ignored; Claude chooses
 
 
 class CadModelResponse(BaseModel):
