@@ -1,0 +1,868 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-03-12",
+  "project": "ForgeFlow",
+  "description": "Product Design Briefs — structured CAD input specs for all 10 ranked products. Feed each brief into the OpenSCAD generation step instead of a product label. Parametric variables define the axes of SKU expansion.",
+  "products": [
+
+    {
+      "rank": 1,
+      "product_id": "usb_cable_desk_organizer",
+      "product_name": "USB / Cable Desk Organizer",
+      "phase": "Launch — Month 1",
+      "forgescore_demand": 1488,
+      "price_range_usd": [16, 16],
+      "material": "PLA",
+      "estimated_print_time_hrs": 1.2,
+      "estimated_filament_g": 35,
+
+      "design_brief": {
+        "product_type": "desktop cable management strip",
+        "primary_use_case": "routing and organizing USB, charging, and peripheral cables along the back or edge of a desk surface",
+        "primary_geometry": "low-profile rectangular bar with top-entry cable slots",
+        "dominant_features": [
+          "evenly spaced top-entry cable slots running along the top face",
+          "flat base suitable for adhesive pad or anti-slip feet",
+          "smooth uninterrupted sides",
+          "consistent height across full length",
+          "optional adhesive recess on bottom face"
+        ],
+        "approximate_dimensions_mm": {
+          "length": 95,
+          "width": 24,
+          "height": 16,
+          "note": "length scales linearly with slot_count parameter"
+        },
+        "slot_geometry": {
+          "slot_count_default": 5,
+          "slot_count_range": [3, 7],
+          "slot_diameter_mm": 6.5,
+          "slot_style": "top-entry teardrop or D-shape opening — wide at top, narrowing to channel — allows cable insertion without threading",
+          "slot_spacing_mm": 16,
+          "slot_depth_mm": 10,
+          "slot_wall_thickness_mm": 2.5
+        },
+        "edge_treatment": "2mm fillet on all exterior edges and corners — no sharp edges anywhere",
+        "base_treatment": "flat bottom with optional 1.5mm shallow recess (14mm × 60mm) for adhesive pad",
+        "mounting": "freestanding flat on desk surface; adhesive-compatible base",
+        "aesthetic": "minimalist, smooth, consumer-product appearance — resembles an Apple or Anker accessory, not a utility tray",
+        "surface_finish": "smooth top and sides — no visible layer lines in render; optimize for 0.2mm layer height",
+        "print_orientation": "flat on base — longest face down on print bed",
+        "support_required": false,
+        "overhang_concern": "slot openings must be designed to print without supports — teardrop geometry handles this",
+        "avoid": [
+          "open tray or container geometry",
+          "tall walls",
+          "storage bin appearance",
+          "lid or cover features",
+          "text or logo embossing unless requested",
+          "decorative cutouts on sides"
+        ],
+        "resemblance_goal": "modern desk accessory sold by a consumer electronics brand — not a DIY cable clip",
+        "commercial_differentiators": "slot count parameterization enables immediate color and quantity variant SKUs; subtle adhesive recess adds perceived value"
+      },
+
+      "parametric_variables": [
+        {"name": "slot_count", "type": "integer", "range": [3, 7], "drives": "total length, number of listings"},
+        {"name": "slot_diameter", "type": "float_mm", "range": [5.5, 8.0], "drives": "cable compatibility"},
+        {"name": "base_height", "type": "float_mm", "range": [14, 20], "drives": "cable clearance under desk"},
+        {"name": "include_adhesive_recess", "type": "boolean", "drives": "mounting variant listings"}
+      ],
+
+      "sku_expansion_strategy": "3-slot, 4-slot, 5-slot, 6-slot variants × 10 filament colors = 40 listings from one CAD file",
+
+      "openscad_prompt": "Create a 3D-printable desktop cable management strip in OpenSCAD. It is a low-profile solid rectangular bar, approximately 95mm long × 24mm wide × 16mm tall, scaled by slot_count parameter. It has [slot_count] top-entry cable slots, each 6.5mm in diameter, evenly spaced 16mm apart along the top face, using teardrop or D-shaped cross-section that prints without supports. Flat base with an optional 1.5mm deep adhesive recess (14mm × 60mm). 2mm fillets applied to all exterior edges and corners. Minimalist smooth surface — no decorative cutouts, no text, no open container geometry. Print orientation: flat on base. No supports required. Material: PLA. Resemblance goal: modern consumer desk accessory, not a utility clip or tray."
+    },
+
+    {
+      "rank": 2,
+      "product_id": "universal_headset_wall_mount",
+      "product_name": "Universal Headset Wall Mount",
+      "phase": "Launch — Month 1",
+      "forgescore_demand": 2058,
+      "price_range_usd": [18, 22],
+      "material": "PLA or PETG",
+      "estimated_print_time_hrs": 2.0,
+      "estimated_filament_g": 55,
+
+      "design_brief": {
+        "product_type": "wall-mounted headphone hook / headset hanger",
+        "primary_use_case": "hanging a gaming or studio headset on a wall beside a monitor or desk; keeps headset off desk surface and at arm's reach",
+        "primary_geometry": "wall bracket plate with extending horizontal arm terminating in a curved hook or cradle",
+        "dominant_features": [
+          "flat mounting plate (back) with 2 keyhole screw slots for wall attachment",
+          "horizontal arm extending 60–80mm from wall",
+          "curved downward-facing hook at arm end sized to accept any headset headband (80–100mm radius)",
+          "clean rectangular or tapered arm profile",
+          "optional integrated cable management clip on arm underside"
+        ],
+        "approximate_dimensions_mm": {
+          "mounting_plate_width": 50,
+          "mounting_plate_height": 80,
+          "mounting_plate_depth": 6,
+          "arm_length": 70,
+          "arm_cross_section": "18mm × 14mm rectangular with 2mm fillet",
+          "hook_outer_radius": 22,
+          "hook_inner_radius": 16,
+          "hook_arc_degrees": 180,
+          "total_depth_from_wall": 90
+        },
+        "mounting_plate": {
+          "screw_hole_style": "keyhole slot — wide at bottom for insertion, narrow at top for locking",
+          "screw_hole_count": 2,
+          "screw_hole_spacing_mm": 50,
+          "screw_diameter_compatibility_mm": 4.0,
+          "plate_thickness_mm": 6
+        },
+        "hook_geometry": {
+          "inner_diameter_mm": 32,
+          "hook_width_mm": 18,
+          "hook_style": "downward-opening C-shape or J-hook — headband rests in curve",
+          "headband_clearance": "must accommodate headbands up to 30mm wide",
+          "hook_tip_clearance": "open at bottom — headset slides in from below, no clip or latch needed"
+        },
+        "edge_treatment": "2mm fillet on all exposed edges; arm-to-plate junction should have a 4mm radius blend",
+        "cable_clip_variant": {
+          "description": "small D-ring or oval clip integrated on underside of arm, 8mm × 12mm interior, holds 1–2 cables",
+          "upsell_value": "justifies $22 vs $18 price point"
+        },
+        "aesthetic": "clean, modern, angular with softened edges — matches desk setup aesthetic, not a utility hook",
+        "print_orientation": "mounting plate flat on bed; arm prints horizontally — no supports if arm angle is <= 45 degrees",
+        "support_required": false,
+        "hardware_required": "2× M4 or drywall screws (not included in print)",
+        "avoid": [
+          "decorative cutouts on plate unless they improve aesthetics significantly",
+          "closed loop hook (makes headset removal awkward)",
+          "sharp edges on hook interior (will scratch headset headband)",
+          "thin arm cross-section under 12mm (flex risk under headset weight)"
+        ],
+        "resemblance_goal": "clean consumer desk accessory — similar aesthetic to what Elgato or Corsair would sell",
+        "commercial_differentiators": "keyhole mounting is tool-free adjustment; universal hook fits all headsets; cable clip variant creates a distinct premium SKU"
+      },
+
+      "parametric_variables": [
+        {"name": "arm_length", "type": "float_mm", "range": [55, 90], "drives": "wall clearance variants"},
+        {"name": "hook_inner_radius", "type": "float_mm", "range": [14, 20], "drives": "headset headband compatibility"},
+        {"name": "include_cable_clip", "type": "boolean", "drives": "standard vs premium SKU, $18 vs $22"},
+        {"name": "plate_style", "type": "enum", "options": ["rectangular", "rounded_rectangle", "minimal_bracket"], "drives": "aesthetic variants"}
+      ],
+
+      "sku_expansion_strategy": "standard + cable clip variant × 10 colors = 20 listings; arm length variants add another axis",
+
+      "openscad_prompt": "Create a 3D-printable wall-mounted headset hook in OpenSCAD. It consists of: (1) a flat rectangular mounting plate 50mm × 80mm × 6mm with 2 keyhole screw slots spaced 50mm apart for M4 screws; (2) a solid horizontal arm 70mm long with 18mm × 14mm rectangular cross-section and 2mm fillets, extending perpendicular from the center of the plate; (3) a downward-opening C-shaped hook at the arm end with 22mm outer radius, 16mm inner radius, 18mm width, open at the bottom so a headset slides in from below. Arm-to-plate junction has a 4mm blending radius. All exterior edges have 2mm fillets. Optional variant: add an integrated D-ring cable clip (8mm × 12mm interior) on the arm underside. Print orientation: plate flat on bed, arm horizontal. No supports required. Material: PLA or PETG. Aesthetic: modern consumer desk product."
+    },
+
+    {
+      "rank": 3,
+      "product_id": "french_cleat_tool_holder_series",
+      "product_name": "French Cleat Tool Holder Series",
+      "phase": "Launch — Month 2",
+      "forgescore_demand": 1470,
+      "price_range_usd": [19, 22],
+      "material": "PETG (workshop-grade, heat-resistant)",
+      "estimated_print_time_hrs": 2.5,
+      "estimated_filament_g": 70,
+
+      "design_brief": {
+        "product_type": "French cleat wall-mount tool holder / drill and impact driver holder",
+        "primary_use_case": "mounting power tools (drills, impact drivers, circular saws) on a French cleat workshop wall for organized, accessible storage",
+        "primary_geometry": "back-mounted cleat hook plate with forward-projecting cylindrical or D-shaped bore that holds the tool nose/chuck area",
+        "dominant_features": [
+          "French cleat slot on back (45° angled hook that locks into cleat strips)",
+          "cylindrical bore on front sized to accept specific tool model nose/body",
+          "forward projection sufficient to hold tool at convenient angle (typically 15–25° tilt forward)",
+          "secondary pegboard mount variant (two 6.35mm pegs on 25.4mm spacing)",
+          "robust wall thickness — must support 2–4 kg tool weight without flex"
+        ],
+        "approximate_dimensions_mm": {
+          "total_width": 65,
+          "total_height": 90,
+          "total_depth_from_wall": 80,
+          "cleat_slot_width": 60,
+          "cleat_slot_depth": 20,
+          "cleat_angle_degrees": 45,
+          "bore_depth": 55,
+          "bore_protrusion_from_plate": 60
+        },
+        "french_cleat_geometry": {
+          "cleat_strip_width_compatibility_mm": 19,
+          "hook_lip_thickness_mm": 8,
+          "hook_angle_degrees": 45,
+          "engagement_depth_mm": 20,
+          "note": "standard French cleat is 3/4-inch (19mm) plywood at 45 degrees; hook must lock positively"
+        },
+        "bore_geometry": {
+          "bore_style": "cylindrical through-bore with 4mm slit along full length to allow flex for insertion",
+          "bore_wall_thickness_mm": 4,
+          "bore_depth_mm": 55,
+          "drill_bore_diameter_mm": 38,
+          "impact_driver_bore_diameter_mm": 34,
+          "circular_saw_bore_diameter_mm": 48,
+          "note": "bore diameter is the primary parametric variable — different values produce brand-specific SKUs"
+        },
+        "brand_bore_diameters": {
+          "DeWalt_drill": 38,
+          "DeWalt_impact": 34,
+          "Milwaukee_drill": 39,
+          "Milwaukee_impact": 35,
+          "Ryobi_drill": 37,
+          "Ryobi_impact": 33,
+          "Makita_drill": 36,
+          "Makita_impact": 32,
+          "Bosch_drill": 37,
+          "Ridgid_drill": 38
+        },
+        "tilt_angle": "bore axis tilts 20 degrees downward from horizontal — tool rests with handle up, chuck down, at natural grab angle",
+        "structural_requirements": "minimum 4mm wall thickness throughout; cleat hook must be solid (no infill economy) for load-bearing",
+        "pegboard_variant": {
+          "description": "replace cleat slot with two 6.35mm diameter pegs on 25.4mm (1-inch) center spacing; pegs project 18mm from back plate",
+          "compatibility": "standard pegboard hole pattern"
+        },
+        "print_orientation": "cleat hook facing up on print bed — bore prints horizontally",
+        "support_required": "minimal — only inside bore if diameter < 35mm; slit along bore prevents support needs",
+        "avoid": [
+          "loose bore fit (tool will rattle and fall)",
+          "thin cleat hook under 8mm (will snap under load)",
+          "bore without insertion slit (tools won't insert easily)",
+          "decorative surface features (this is a workshop tool — clean and utilitarian)"
+        ],
+        "resemblance_goal": "professional workshop storage product — similar to what Rockler or FastCap would sell",
+        "commercial_differentiators": "brand-specific bore diameter creates 36+ distinct searchable SKUs (6 brands × 3 tool types × 2 mount types) from one base CAD file"
+      },
+
+      "parametric_variables": [
+        {"name": "bore_diameter_mm", "type": "float_mm", "range": [32, 50], "drives": "brand and tool type — primary SKU axis"},
+        {"name": "mount_type", "type": "enum", "options": ["french_cleat", "pegboard"], "drives": "mount style — doubles listing count"},
+        {"name": "tool_type_label", "type": "string", "options": ["drill", "impact_driver", "circular_saw"], "drives": "listing title and bore depth"},
+        {"name": "tilt_angle_degrees", "type": "integer", "range": [10, 30], "drives": "ergonomic grab angle variants"}
+      ],
+
+      "sku_expansion_strategy": "6 brands × 3 tool types × 2 mount types = 36 listings from one script; bore_diameter is the only dimension that changes per SKU",
+
+      "openscad_prompt": "Create a 3D-printable French cleat tool holder in OpenSCAD for a workshop wall. It has two parts: (1) a back plate 65mm wide × 90mm tall × 15mm deep with a 45-degree French cleat hook slot (19mm wide × 20mm deep) along the full top-back edge — the hook angles at 45 degrees to lock onto a French cleat strip; (2) a cylindrical bore projecting 60mm forward from the plate center, [bore_diameter_mm] interior diameter, 4mm wall thickness, with a 4mm slit running the full length of the top of the bore to allow tool insertion by flexing. Bore axis tilts 20 degrees downward from horizontal. All structural walls minimum 4mm. No thin features — this must support 2–4kg tools. Material: PETG. No decorative features. Print with bore horizontal. Supports inside bore only if needed. Alternate variant: replace cleat slot with two 6.35mm pegs on 25.4mm spacing for pegboard compatibility."
+    },
+
+    {
+      "rank": 4,
+      "product_id": "controller_stand_universal",
+      "product_name": "Controller Stand (PS5 / Xbox / Switch)",
+      "phase": "Launch — Month 2",
+      "forgescore_demand": 1680,
+      "price_range_usd": [20, 26],
+      "material": "PLA or PETG",
+      "estimated_print_time_hrs": 3.0,
+      "estimated_filament_g": 75,
+
+      "design_brief": {
+        "product_type": "desktop game controller display and storage stand",
+        "primary_use_case": "holding a game controller upright on a desk when not in use — functional display, not a charging stand",
+        "primary_geometry": "base with two angled cradle arms that support the controller grips from below, holding the controller nearly vertical (leaning 10–15 degrees back)",
+        "dominant_features": [
+          "weighted-feeling solid base (rectangular or sculpted)",
+          "two upward-angled cradle arms with concave inner face matching controller grip profile",
+          "controller rests with grips in cradle, face pointing forward and slightly up",
+          "non-slip base (textured bottom or TPU pad recess)",
+          "clean gap between arms allows cable passthrough for charging while stored"
+        ],
+        "controller_specific_dimensions": {
+          "PS5_DualSense": {
+            "grip_width_mm": 160,
+            "grip_outer_diameter_mm": 38,
+            "cradle_arm_spacing_mm": 115,
+            "cradle_depth_mm": 20,
+            "cradle_inner_radius_mm": 22
+          },
+          "Xbox_Series": {
+            "grip_width_mm": 155,
+            "grip_outer_diameter_mm": 36,
+            "cradle_arm_spacing_mm": 108,
+            "cradle_depth_mm": 20,
+            "cradle_inner_radius_mm": 21
+          },
+          "Nintendo_Switch_Joy_Con": {
+            "grip_width_mm": 240,
+            "grip_outer_diameter_mm": 20,
+            "cradle_arm_spacing_mm": 185,
+            "cradle_depth_mm": 15,
+            "cradle_inner_radius_mm": 14
+          },
+          "PS4_DualShock": {
+            "grip_width_mm": 152,
+            "grip_outer_diameter_mm": 34,
+            "cradle_arm_spacing_mm": 104,
+            "cradle_depth_mm": 18,
+            "cradle_inner_radius_mm": 20
+          }
+        },
+        "approximate_dimensions_mm": {
+          "base_length": 130,
+          "base_width": 90,
+          "base_height": 12,
+          "arm_height_from_base": 35,
+          "arm_width": 22,
+          "arm_thickness": 16,
+          "total_height_with_controller": 170
+        },
+        "base_geometry": {
+          "shape": "rounded rectangle with 8mm corner radius",
+          "thickness_mm": 12,
+          "anti_slip": "4mm × 2mm recess on each corner for rubber feet or TPU pad",
+          "cable_channel": "optional 10mm wide × 6mm deep channel on back edge of base for cable routing"
+        },
+        "arm_geometry": {
+          "arm_taper": "arms taper from 22mm wide at base to 16mm at tip",
+          "concave_face": "inner face of each arm has a 22mm radius concave curve to cradle cylindrical grip",
+          "arm_lean_angle": "arms lean inward 5 degrees to grip controller slightly",
+          "arm_tip": "rounded tip — 8mm radius hemisphere at arm top"
+        },
+        "controller_tilt": "cradle angles controller 12 degrees back from vertical — face visible and accessible",
+        "dual_holder_variant": {
+          "description": "second set of arms added side by side on a wider base (220mm × 90mm) to hold two controllers simultaneously",
+          "base_length_mm": 220,
+          "arm_sets": 2,
+          "arm_set_spacing_mm": 105
+        },
+        "print_orientation": "base flat on print bed; arms print vertically — no supports needed if arm lean < 45 degrees",
+        "support_required": false,
+        "avoid": [
+          "charging port cutouts (adds complexity, not a charging stand)",
+          "brand logos or controller silhouette embossing (IP risk)",
+          "complex organic curves (hard for OpenSCAD, use simple geometry)",
+          "arms too narrow under 14mm (flex risk)"
+        ],
+        "resemblance_goal": "clean gaming desk accessory — similar to what Numskull or HORI would sell at retail",
+        "commercial_differentiators": "per-console cradle spacing is the parametric variable; dual-hold variant is a distinct premium SKU; cable channel adds function without complexity"
+      },
+
+      "parametric_variables": [
+        {"name": "cradle_arm_spacing_mm", "type": "float_mm", "drives": "console-specific fit — primary SKU axis"},
+        {"name": "cradle_inner_radius_mm", "type": "float_mm", "drives": "grip diameter compatibility"},
+        {"name": "dual_controller", "type": "boolean", "drives": "single vs dual-controller SKU — 2x price point"},
+        {"name": "include_cable_channel", "type": "boolean", "drives": "standard vs cable-management variant"}
+      ],
+
+      "sku_expansion_strategy": "4 consoles × single/dual variants = 8 base SKUs × 8 filament colors = 64 listings",
+
+      "openscad_prompt": "Create a 3D-printable game controller stand in OpenSCAD. It has: (1) a solid rounded-rectangle base 130mm × 90mm × 12mm with 8mm corner radius and 4 anti-slip recess pads (4mm × 4mm × 2mm) at each corner; (2) two vertical cradle arms rising 35mm from the base, each 22mm wide × 16mm thick, tapering to 16mm at top, spaced [cradle_arm_spacing_mm] apart center-to-center, with a [cradle_inner_radius_mm] concave curve on inner faces; arms lean inward 5 degrees. Arms angle the controller 12 degrees back from vertical. Rounded hemisphere tips. Optional: 10mm × 6mm cable channel on rear base edge. All edges 2mm fillet. Print base flat. No supports. Material: PLA or PETG. Aesthetic: clean gaming desk accessory."
+    },
+
+    {
+      "rank": 5,
+      "product_id": "compact_cable_organizer_clips",
+      "product_name": "Compact Cable Organizer / Clips",
+      "phase": "Launch — Month 1",
+      "forgescore_demand": 980,
+      "price_range_usd": [14, 16],
+      "material": "PLA",
+      "estimated_print_time_hrs": 0.6,
+      "estimated_filament_g": 18,
+
+      "design_brief": {
+        "product_type": "adhesive-backed or clip-on desktop cable management clip",
+        "primary_use_case": "routing individual cables along the back or underside of a desk surface, wall, or monitor stand — sold in sets of 5 or 10",
+        "primary_geometry": "small rectangular or rounded-square body with one or more cable channels and an adhesive pad recess on the bottom",
+        "dominant_features": [
+          "top-entry cable channel with flexible lip for snap-in retention",
+          "flat base with adhesive pad recess (3M strip compatible)",
+          "compact footprint — small enough to disappear on a desk surface",
+          "smooth exterior with rounded corners",
+          "single-cable and dual-cable variants"
+        ],
+        "approximate_dimensions_mm": {
+          "single_channel_body": {"length": 28, "width": 20, "height": 14},
+          "dual_channel_body": {"length": 44, "width": 20, "height": 14},
+          "adhesive_recess_depth": 1.5,
+          "adhesive_recess_margin": 2.0
+        },
+        "cable_channel_geometry": {
+          "channel_diameter_mm": 6.5,
+          "channel_style": "top-entry with 4mm wide opening (narrower than cable diameter for retention)",
+          "channel_lip_thickness_mm": 1.2,
+          "lip_flex_gap": "0.8mm gap on each side of opening so lip flexes on insertion",
+          "channel_count_options": [1, 2, 3],
+          "channel_spacing_mm": 16
+        },
+        "adhesive_recess": {
+          "depth_mm": 1.5,
+          "width_mm": 16,
+          "length_mm": 22,
+          "note": "recess accepts standard 3M Command strip or double-sided foam tape"
+        },
+        "listing_strategy": {
+          "unit_configuration": "sold in sets: 5-pack, 8-pack, 10-pack",
+          "print_configuration": "print 8–10 clips per bed per run for high throughput (192 units/month)",
+          "color_strategy": "white and black are primary; offer color-match variants"
+        },
+        "print_orientation": "base flat on print bed; channel lip prints upward — no supports",
+        "support_required": false,
+        "avoid": [
+          "closed clip-on designs (desk-edge clamps) — adhesive is faster to manufacture",
+          "channel opening wider than 5mm (cable will fall out)",
+          "thin base under 3mm (will crack when adhesive is removed)",
+          "complex geometry — this must print in under 40 minutes per piece"
+        ],
+        "resemblance_goal": "clean, near-invisible cable management — similar to what Bluelounge or MAGICWIRE would sell",
+        "commercial_differentiators": "companion SKU to Product #1 cable organizer — same Etsy buyer; set quantities drive AOV above single-unit price"
+      },
+
+      "parametric_variables": [
+        {"name": "channel_count", "type": "integer", "range": [1, 3], "drives": "single/dual/triple cable variants"},
+        {"name": "channel_diameter_mm", "type": "float_mm", "range": [5.0, 8.0], "drives": "thin vs thick cable compatibility"},
+        {"name": "set_quantity", "type": "integer", "options": [5, 8, 10], "drives": "listing price and AOV"},
+        {"name": "include_desk_edge_clip", "type": "boolean", "drives": "adhesive vs clamp-on variant"}
+      ],
+
+      "sku_expansion_strategy": "1/2/3 channel × 5/8/10 pack × 6 colors = 90+ listing variants; fastest print of all products enables maximum throughput",
+
+      "openscad_prompt": "Create a 3D-printable compact cable management clip in OpenSCAD. Single-channel variant: a solid rounded-rectangle body 28mm × 20mm × 14mm with 3mm corner radius. Top face has a top-entry cable channel 6.5mm diameter with a 4mm wide opening and 1.2mm thick flex lips with 0.8mm gaps at each side for snap-in retention. Bottom face has a 1.5mm deep adhesive pad recess 16mm × 22mm. All exterior edges 1.5mm fillet. Dual-channel variant: 44mm long, same profile, two channels spaced 16mm apart. Print base flat on bed. No supports. Material: PLA. Aesthetic: minimal, near-invisible desk accessory."
+    },
+
+    {
+      "rank": 6,
+      "product_id": "plant_propagation_station",
+      "product_name": "Plant Propagation Station",
+      "phase": "Month 3",
+      "forgescore_demand": 1100,
+      "price_range_usd": [20, 26],
+      "material": "PLA",
+      "estimated_print_time_hrs": 2.5,
+      "estimated_filament_g": 70,
+
+      "design_brief": {
+        "product_type": "decorative wall-mounted or freestanding plant propagation station with glass tube holders",
+        "primary_use_case": "holding glass test tubes filled with water for propagating plant cuttings — functional home decor for plant parents",
+        "primary_geometry": "decorative flat frame or silhouette shape with circular through-holes sized for glass test tubes, with a flat back for wall mounting or small feet for countertop use",
+        "dominant_features": [
+          "decorative outer silhouette (cloud, arch, geometric, leaf shape)",
+          "2–5 circular through-holes for 18mm OD glass test tubes",
+          "flat back plate for wall mounting (keyhole slots) or desktop feet",
+          "smooth, organic exterior curves appropriate for home decor",
+          "substantial material thickness (not fragile) — 8–10mm face depth"
+        ],
+        "glass_tube_compatibility": {
+          "tube_OD_mm": 18,
+          "tube_wall_thickness_mm": 1.5,
+          "hole_diameter_mm": 18.4,
+          "hole_tolerance": "0.4mm clearance — snug but removable",
+          "tube_length_mm": 150,
+          "hole_depth_mm": 8,
+          "note": "through-hole so tube hangs through; front rim lip retains tube"
+        },
+        "silhouette_variants": {
+          "arch": {
+            "description": "simple rounded arch shape — 120mm wide × 160mm tall × 10mm deep",
+            "tube_count": 3,
+            "tube_arrangement": "evenly spaced in a row 30mm from bottom",
+            "dimensions_mm": {"width": 120, "height": 160, "depth": 10}
+          },
+          "cloud": {
+            "description": "cloud silhouette with 3 bumps on top — 160mm wide × 110mm tall × 10mm deep",
+            "tube_count": 3,
+            "tube_arrangement": "evenly spaced in bottom third of cloud",
+            "dimensions_mm": {"width": 160, "height": 110, "depth": 10}
+          },
+          "geometric_rectangle": {
+            "description": "rounded rectangle with chamfered or scalloped edges — 140mm × 90mm × 10mm",
+            "tube_count": 3,
+            "tube_arrangement": "row of 3, centered",
+            "dimensions_mm": {"width": 140, "height": 90, "depth": 10}
+          },
+          "monstera_leaf": {
+            "description": "simplified monstera deliciosa leaf outline — 130mm wide × 160mm tall × 10mm deep",
+            "tube_count": 2,
+            "tube_arrangement": "two tubes near lower stem area",
+            "dimensions_mm": {"width": 130, "height": 160, "depth": 10}
+          }
+        },
+        "wall_mounting": {
+          "style": "two keyhole slots on back face, 60mm apart vertically",
+          "screw_compatibility": "M4 or standard picture hook screw",
+          "countertop_variant": "add 4 flat feet (10mm × 5mm × 3mm) on base edge for freestanding use"
+        },
+        "aesthetic": "home decor quality — smooth curves, no sharp corners, paintable surface, resembles Scandinavian or boho decor",
+        "print_orientation": "flat face down on print bed — tube holes print vertically (clean edges, no stringing)",
+        "support_required": false,
+        "material_notes": "PLA is appropriate — this is indoor decorative item. Matte filament improves appearance.",
+        "bundle_with": "2× glass test tubes (150mm × 18mm OD) — $0.80 material cost adds $6–8 perceived value",
+        "avoid": [
+          "thin structural sections under 6mm (will break if dropped)",
+          "sharp corners on exterior silhouette",
+          "complex undercut geometry",
+          "tube holes smaller than 18mm (tubes won't fit)"
+        ],
+        "resemblance_goal": "artisan home decor product — similar to handmade ceramic or wood propagation stations on Etsy",
+        "commercial_differentiators": "silhouette shape is the primary creative variable; 4-pack bundle listing at $72–80 is best AOV play in entire portfolio"
+      },
+
+      "parametric_variables": [
+        {"name": "silhouette_shape", "type": "enum", "options": ["arch", "cloud", "geometric", "monstera"], "drives": "primary design variant — each is a separate listing"},
+        {"name": "tube_count", "type": "integer", "range": [2, 5], "drives": "size and price variants"},
+        {"name": "mounting_style", "type": "enum", "options": ["wall_keyhole", "countertop_feet", "both"], "drives": "placement variant"},
+        {"name": "tube_hole_diameter_mm", "type": "float_mm", "range": [18.4, 22.0], "drives": "tube size compatibility"}
+      ],
+
+      "sku_expansion_strategy": "4 silhouette shapes × 2/3/4 tube counts × wall/countertop = 24+ SKUs; 4-pack bundle listing multiplies AOV without extra design work",
+
+      "openscad_prompt": "Create a 3D-printable plant propagation station in OpenSCAD — arch variant. A solid arch silhouette 120mm wide × 160mm tall × 10mm deep, with smooth rounded outer profile and 8mm minimum material thickness at all points. Contains 3 evenly spaced circular through-holes 18.4mm diameter, positioned in a row 30mm from the base of the arch. Each hole has a 1.5mm front rim lip. Two keyhole mounting slots on back face, 60mm apart vertically, for M4 screws. All exterior edges 2mm fillet. No sharp corners. Flat face prints on bed. No supports. Material: PLA. Aesthetic: clean Scandinavian home decor. Alternate variant: replace mounting slots with 4 flat feet on base edge for countertop use."
+    },
+
+    {
+      "rank": 7,
+      "product_id": "under_shelf_drill_impact_holder",
+      "product_name": "Under-Shelf Drill / Impact Holder",
+      "phase": "Month 3",
+      "forgescore_demand": 1225,
+      "price_range_usd": [21, 21],
+      "material": "PETG",
+      "estimated_print_time_hrs": 2.8,
+      "estimated_filament_g": 80,
+
+      "design_brief": {
+        "product_type": "under-shelf or under-workbench power tool holder",
+        "primary_use_case": "mounting a drill or impact driver under a shelf, workbench, or cabinet — tool hangs nose-down, accessible from below, saving shelf surface",
+        "primary_geometry": "flat mounting plate (attaches to shelf underside with screws) with a downward-projecting cylindrical bore that grips the tool nose/chuck area",
+        "dominant_features": [
+          "flat mounting plate with 4 screw holes for shelf attachment",
+          "downward-projecting cylindrical bore perpendicular to mounting plate",
+          "insertion slit along bore length for tool snap-in",
+          "robust minimum 5mm wall thickness — supporting hanging tool weight",
+          "optional second bore for impact driver alongside drill"
+        ],
+        "approximate_dimensions_mm": {
+          "mounting_plate_width": 90,
+          "mounting_plate_length": 80,
+          "mounting_plate_thickness": 8,
+          "bore_length": 65,
+          "bore_wall_thickness": 5,
+          "total_height_below_shelf": 80
+        },
+        "mounting_plate": {
+          "screw_hole_count": 4,
+          "screw_hole_diameter_mm": 4.5,
+          "screw_hole_pattern": "rectangular, 70mm × 60mm spacing",
+          "screw_type": "wood screws, self-tapping",
+          "plate_thickness_mm": 8
+        },
+        "bore_geometry": {
+          "bore_orientation": "perpendicular to mounting plate — projects straight down",
+          "bore_length_mm": 65,
+          "bore_wall_thickness_mm": 5,
+          "insertion_slit_width_mm": 5,
+          "insertion_slit_length": "full length of bore",
+          "insertion_slit_position": "front face — tool nose inserts from front",
+          "bore_diameters_by_tool": {
+            "drill_18V_compact": 36,
+            "drill_standard": 38,
+            "impact_driver": 34,
+            "circular_saw_handle": 52
+          }
+        },
+        "dual_holder_variant": {
+          "description": "mounting plate extends to 160mm × 80mm with two bores side by side, 80mm apart center-to-center",
+          "use_case": "holds drill + impact driver on same mount — justifies $28–32 price point"
+        },
+        "structural_requirements": "all bore walls minimum 5mm; mounting plate minimum 8mm; no infill economy in load-bearing sections — must hold 2.5kg tool hanging from bore",
+        "print_orientation": "mounting plate flat on print bed; bore projects upward during print (bore opening at top)",
+        "support_required": "light support inside bore if diameter < 38mm; slit reduces support need",
+        "avoid": [
+          "bore without insertion slit (cannot insert tool)",
+          "mounting plate under 6mm thickness (will flex and screws will pull through)",
+          "wall thickness under 4mm anywhere",
+          "brand-specific contour fitting (universal bore is more versatile)"
+        ],
+        "resemblance_goal": "professional workshop storage system — matches Milwaukee or Dewalt brand workshop organization aesthetics",
+        "commercial_differentiators": "under-shelf mounting is a distinct SKU from French cleat (#3) — same buyer, different wall location; dual-holder justifies premium price"
+      },
+
+      "parametric_variables": [
+        {"name": "bore_diameter_mm", "type": "float_mm", "range": [32, 55], "drives": "brand and tool type — matches French Cleat series bore diameters"},
+        {"name": "dual_holder", "type": "boolean", "drives": "single vs dual tool mount — premium price"},
+        {"name": "bore_count", "type": "integer", "range": [1, 2], "drives": "single/dual configuration"},
+        {"name": "screw_hole_diameter_mm", "type": "float_mm", "range": [3.5, 5.0], "drives": "screw type compatibility"}
+      ],
+
+      "sku_expansion_strategy": "matches French Cleat series bore diameters — use same bore_diameter values for brand-consistent listings; dual variant adds premium price point",
+
+      "openscad_prompt": "Create a 3D-printable under-shelf drill holder in OpenSCAD. It has: (1) a flat rectangular mounting plate 90mm × 80mm × 8mm with 4 countersunk screw holes (4.5mm diameter) in a 70mm × 60mm rectangular pattern for wood screw attachment to shelf underside; (2) a downward-projecting cylindrical bore 65mm long, [bore_diameter_mm] interior diameter, 5mm wall thickness, projecting perpendicular from the mounting plate center; bore has a 5mm wide insertion slit along its full front length for tool snap-in. All structural walls minimum 5mm. 2mm fillets on plate edges. Print with plate flat on bed, bore projecting upward. Supports inside bore as needed. Material: PETG. Dual variant: extend plate to 160mm, add second identical bore 80mm away."
+    },
+
+    {
+      "rank": 8,
+      "product_id": "gridfinity_drawer_organizer_kit",
+      "product_name": "Gridfinity Drawer Organizer Kit",
+      "phase": "Month 3",
+      "forgescore_demand": 1715,
+      "price_range_usd": [28, 35],
+      "material": "PLA",
+      "estimated_print_time_hrs": 4.5,
+      "estimated_filament_g": 130,
+
+      "design_brief": {
+        "product_type": "Gridfinity-standard modular drawer organizer bin system",
+        "primary_use_case": "organizing small items (screws, batteries, coins, office supplies, makeup, craft supplies) in drawers using the open-source Gridfinity modular grid standard",
+        "primary_geometry": "modular rectangular bins that conform exactly to the Gridfinity open standard — bins slot into a base plate with magnetic lock points",
+        "gridfinity_standard": {
+          "grid_unit_mm": 42,
+          "base_pitch_mm": 42,
+          "magnet_well_diameter_mm": 6.5,
+          "magnet_well_depth_mm": 2.4,
+          "screw_hole_diameter_mm": 3.0,
+          "screw_hole_depth_mm": 6.0,
+          "base_plate_height_mm": 5,
+          "bin_base_height_mm": 7,
+          "bin_unit_height_mm": 7,
+          "stacking_lip_height_mm": 4.4,
+          "stacking_lip_inset_mm": 0.25,
+          "community_spec_url": "https://gridfinity.xyz/specification/"
+        },
+        "dominant_features": [
+          "strict adherence to Gridfinity standard dimensions — must be community-compatible",
+          "base plate with magnet wells and screw holes at every grid intersection",
+          "bins in multiple grid sizes (1×1, 1×2, 2×1, 2×2, 1×3, 2×3)",
+          "bin interiors with optional dividers",
+          "stacking lip on all bins for vertical stacking",
+          "label recess on front face of bins"
+        ],
+        "bin_size_matrix": {
+          "1x1": {"exterior_mm": "41.5 × 41.5", "interior_mm": "37.5 × 37.5", "use": "small hardware, SD cards"},
+          "1x2": {"exterior_mm": "41.5 × 83.5", "interior_mm": "37.5 × 79.5", "use": "pens, markers, tools"},
+          "2x1": {"exterior_mm": "83.5 × 41.5", "interior_mm": "79.5 × 37.5", "use": "cables, batteries"},
+          "2x2": {"exterior_mm": "83.5 × 83.5", "interior_mm": "79.5 × 79.5", "use": "larger items"},
+          "1x3": {"exterior_mm": "41.5 × 125.5", "interior_mm": "37.5 × 121.5", "use": "long tools, scissors"},
+          "2x3": {"exterior_mm": "83.5 × 125.5", "interior_mm": "79.5 × 121.5", "use": "large grouped items"}
+        },
+        "bin_height_options": {
+          "1_unit": "7mm — very shallow, coins/cards",
+          "2_unit": "14mm — standard shallow",
+          "3_unit": "21mm — medium depth",
+          "6_unit": "42mm — tall, batteries/markers"
+        },
+        "base_plate_configurations": {
+          "3x3": {"exterior_mm": "126 × 126", "grid_units": 9},
+          "3x5": {"exterior_mm": "126 × 210", "grid_units": 15},
+          "5x5": {"exterior_mm": "210 × 210", "grid_units": 25}
+        },
+        "listing_kit_configuration": {
+          "standard_kit": "1× 3x5 base plate + 4× 1×1 bins + 3× 1×2 bins + 1× 2×2 bin",
+          "starter_kit": "1× 3x3 base plate + 6× 1×1 bins + 2× 1×2 bins",
+          "premium_kit": "2× 3x5 base plates + full bin assortment"
+        },
+        "print_orientation": "all pieces print flat on base — base plate flat down, bins upside down (open face on bed)",
+        "support_required": false,
+        "tolerance_notes": "Gridfinity is a precision standard — bins must slide smoothly. Use 0.15–0.2mm layer height. Recommend calibration print before production run.",
+        "avoid": [
+          "deviating from Gridfinity standard dimensions — community compatibility is a selling point",
+          "skipping magnet wells (buyers add magnets to lock bins in place)",
+          "rough interior surfaces (will catch small items)"
+        ],
+        "resemblance_goal": "matches the Gridfinity community standard exactly — buyers specifically search for 'Gridfinity' keyword",
+        "commercial_differentiators": "Gridfinity is an open-source standard with enormous active community; listing to exact spec lets ForgeFlow tap into existing keyword traffic without community backlash"
+      },
+
+      "parametric_variables": [
+        {"name": "bin_grid_width", "type": "integer", "range": [1, 3], "drives": "bin footprint X"},
+        {"name": "bin_grid_length", "type": "integer", "range": [1, 4], "drives": "bin footprint Y"},
+        {"name": "bin_height_units", "type": "integer", "range": [1, 6], "drives": "bin depth"},
+        {"name": "base_plate_width_units", "type": "integer", "range": [3, 7], "drives": "base plate size"},
+        {"name": "base_plate_length_units", "type": "integer", "range": [3, 7], "drives": "base plate size"},
+        {"name": "include_label_recess", "type": "boolean", "drives": "label-compatible variant"}
+      ],
+
+      "sku_expansion_strategy": "kit configurations (starter/standard/premium) × target markets (desk/workshop/makeup/kitchen) × colors = 40+ listings; Gridfinity keyword has dedicated search traffic",
+
+      "openscad_prompt": "Create a 3D-printable Gridfinity-standard modular bin in OpenSCAD, adhering exactly to the Gridfinity community specification. Bin exterior dimensions: (42 × bin_grid_width - 0.5)mm × (42 × bin_grid_length - 0.5)mm × (7 × bin_height_units)mm. Wall thickness 1.5mm. Base has 6.5mm × 2.4mm magnet wells at each grid corner intersection (25.4mm inset from corner). Stacking lip on top rim: 4.4mm tall, 0.25mm inset. Label recess on front face: 1mm deep, 80% of face width, 8mm tall. Interior corners have 1.5mm fillet. Bottom of interior has small drainage holes optional. Print upside down (open face on bed). No supports. Companion base plate: (42 × plate_width_units)mm × (42 × plate_length_units)mm × 5mm with magnet wells and 3mm screw holes at every grid intersection. Material: PLA."
+    },
+
+    {
+      "rank": 9,
+      "product_id": "dual_controller_headset_stand",
+      "product_name": "Dual Controller + Headset Stand",
+      "phase": "Month 4",
+      "forgescore_demand": 1340,
+      "price_range_usd": [30, 36],
+      "material": "PETG",
+      "estimated_print_time_hrs": 5.0,
+      "estimated_filament_g": 130,
+
+      "design_brief": {
+        "product_type": "combined gaming desk organizer — dual controller cradles plus headset hook on a single stand",
+        "primary_use_case": "organizing a full gaming setup with two controllers and a headset on one compact desktop stand — replaces three separate accessories",
+        "primary_geometry": "wide stable base with two controller cradle arm sets flanking a central vertical tower that terminates in a headset hook",
+        "dominant_features": [
+          "wide weighted-feeling base (220mm+) for stability",
+          "two controller cradle sets (left and right), same geometry as Product #4",
+          "central tower rising from base center to ~280mm height",
+          "headset hook at tower top — same geometry as Product #2 hook",
+          "cable management channel through tower base",
+          "anti-slip base pads"
+        ],
+        "approximate_dimensions_mm": {
+          "base_length": 220,
+          "base_width": 95,
+          "base_thickness": 14,
+          "tower_height": 280,
+          "tower_cross_section": "28mm × 22mm rectangular",
+          "tower_base_to_cradle_center": 40,
+          "cradle_spacing_from_center": 90,
+          "headset_hook_at_height": 270,
+          "total_footprint": "220mm × 95mm"
+        },
+        "base_geometry": {
+          "shape": "rounded rectangle, 8mm corner radius",
+          "thickness_mm": 14,
+          "anti_slip_recesses": "6mm × 3mm × 2mm recesses at 4 corners and 2 midpoints for rubber feet",
+          "cable_channel": "10mm × 6mm channel running down center of base underside for cable routing"
+        },
+        "controller_cradles": {
+          "count": 2,
+          "position": "left and right of tower, 90mm from tower center each",
+          "geometry": "identical to Product #4 controller stand cradle arms",
+          "cradle_arm_height_from_base": 35,
+          "arm_spacing": "parameterized by console — same values as Product #4",
+          "arm_lean_angle_degrees": 5
+        },
+        "central_tower": {
+          "cross_section_mm": "28mm × 22mm",
+          "height_mm": 280,
+          "taper": "slight taper from 28mm at base to 22mm at top for visual elegance",
+          "wall_thickness_mm": "solid or 4mm minimum wall hollow",
+          "edge_fillet_mm": 3
+        },
+        "headset_hook": {
+          "geometry": "identical to Product #2 headset hook",
+          "inner_radius_mm": 18,
+          "outer_radius_mm": 24,
+          "hook_width_mm": 20,
+          "orientation": "extends forward from tower top — headset hangs in front of stand",
+          "hook_projection_from_tower_mm": 30
+        },
+        "structural_requirements": "tower must not flex — minimum 4mm wall at all cross-sections; base must be thick enough to counterweight headset on hook; recommend 20% gyroid infill on tower",
+        "print_orientation": "base flat on print bed; tower prints vertically — split print may be needed if total height exceeds build plate",
+        "split_print_option": {
+          "description": "tower and base printed as separate parts with friction-fit or screw-together joint at tower base",
+          "joint_type": "22mm × 22mm square tenon, 2mm clearance",
+          "benefit": "keeps each piece within 200mm height; no supports needed"
+        },
+        "support_required": "none if split print; minimal if one piece (hook arm only)",
+        "avoid": [
+          "tower under 22mm cross-section (will flex with headset weight)",
+          "base under 12mm thickness (will tip with heavy headset)",
+          "headset hook projecting over 50mm (moment arm too long — tips stand)",
+          "closed hook (headset removal awkward)"
+        ],
+        "resemblance_goal": "premium gaming desk organization system — similar to OAPRIRE or Corsair multi-accessory stands sold at $40–60 retail",
+        "commercial_differentiators": "replaces three separate purchases; highest per-unit profit in gaming category at $10.53; natural upsell from buyers who own Product #2 and #4"
+      },
+
+      "parametric_variables": [
+        {"name": "cradle_arm_spacing_mm", "type": "float_mm", "drives": "console compatibility — same values as Product #4"},
+        {"name": "tower_height_mm", "type": "float_mm", "range": [240, 310], "drives": "headset clearance above controllers"},
+        {"name": "split_print", "type": "boolean", "drives": "one-piece vs two-piece assembly variant"},
+        {"name": "include_cable_channel", "type": "boolean", "drives": "cable management variant"}
+      ],
+
+      "sku_expansion_strategy": "4 console variants × 8 colors = 32 listings; premium price point and highest profit per unit in gaming category",
+
+      "openscad_prompt": "Create a 3D-printable dual controller and headset stand in OpenSCAD. It has: (1) a wide rounded-rectangle base 220mm × 95mm × 14mm with 8mm corner radius, anti-slip recesses at 6 points, and a 10mm × 6mm cable channel on underside; (2) a central vertical tower rising 280mm from base center, 28mm × 22mm cross-section tapering slightly to 22mm × 18mm at top, 4mm minimum wall, 3mm edge fillet; (3) two controller cradle arm sets positioned 90mm left and right of tower center, each with two arms rising 35mm from base, [cradle_arm_spacing_mm] apart, concave inner faces, 5-degree inward lean — same geometry as standalone controller stand; (4) a downward-opening C-hook at tower top projecting 30mm forward, 24mm outer radius, 18mm inner radius, 20mm wide. All edges 2mm fillet. Print base flat. Optional split: tower detaches at base with 22mm square friction-fit tenon. Material: PETG."
+    },
+
+    {
+      "rank": 10,
+      "product_id": "board_game_organizer_insert",
+      "product_name": "Board Game Organizer Insert",
+      "phase": "Phase 2",
+      "forgescore_demand": 1200,
+      "price_range_usd": [38, 55],
+      "material": "PLA",
+      "estimated_print_time_hrs": 12.0,
+      "estimated_filament_g": 350,
+
+      "design_brief": {
+        "product_type": "custom-fit board game box organizer insert — tray and divider system",
+        "primary_use_case": "replacing the cardboard box insert of a specific board game with a precision-fit printed tray system that organizes components (cards, tokens, meeples, dice, boards) for faster setup and teardown",
+        "primary_geometry": "set of rectangular trays with internal dividers and card holders, sized to fit exactly inside a specific game box, with total stack height matching box interior depth",
+        "dominant_features": [
+          "precision-fit trays sized to specific game box interior dimensions",
+          "card tray with finger-access notch for easy card removal",
+          "token tray with multiple compartments per component type",
+          "lid-lock design — all trays stack to exactly box interior height so lid closes flat",
+          "component labels or pictogram recesses on tray dividers",
+          "interlocking tray edges for alignment"
+        ],
+        "game_specific_dimensions": {
+          "Wingspan": {
+            "box_interior_mm": {"length": 285, "width": 285, "depth": 75},
+            "component_count": "170 cards, 170 eggs, 75 food tokens, 40 action cubes, 5 player mats, 1 bird tray",
+            "tray_count": 5,
+            "estimated_filament_g": 320,
+            "print_time_hrs": 11
+          },
+          "Gloomhaven_Jaws_of_the_Lion": {
+            "box_interior_mm": {"length": 295, "width": 220, "depth": 75},
+            "component_count": "500+ cards, 50 monster standees, overlays, ability cards, item cards",
+            "tray_count": 6,
+            "estimated_filament_g": 380,
+            "print_time_hrs": 14
+          },
+          "Catan": {
+            "box_interior_mm": {"length": 295, "width": 295, "depth": 60},
+            "component_count": "19 hex tiles, 95 resource cards, settlements, cities, roads, dice",
+            "tray_count": 4,
+            "estimated_filament_g": 250,
+            "print_time_hrs": 9
+          },
+          "Ticket_to_Ride": {
+            "box_interior_mm": {"length": 298, "width": 298, "depth": 60},
+            "component_count": "240 cards, 225 trains per color, 5 player sets, board",
+            "tray_count": 4,
+            "estimated_filament_g": 270,
+            "print_time_hrs": 10
+          }
+        },
+        "universal_tray_geometry": {
+          "wall_thickness_mm": 1.8,
+          "base_thickness_mm": 1.5,
+          "divider_thickness_mm": 1.5,
+          "card_tray_finger_notch": "semicircle 25mm diameter × 10mm deep on one short end of card tray",
+          "token_compartment_min_size_mm": "20mm × 20mm × 20mm",
+          "corner_radius_exterior_mm": 3,
+          "corner_radius_interior_mm": 2,
+          "tray_stacking_tolerance_mm": 0.3,
+          "lid_height_tolerance_mm": 1.0
+        },
+        "print_orientation": "trays print open-face up — all walls vertical, base on print bed",
+        "support_required": false,
+        "color_strategy": "neutral colors (white, black, gray) for universal appeal; game-specific accent colors optionally",
+        "listing_strategy": {
+          "per_game_listing": "each game title is a separate Etsy listing — Wingspan Insert, Gloomhaven Insert, etc.",
+          "keyword_targeting": "game title + 'insert' + '3D printed' — high-intent, low-competition",
+          "price_by_complexity": "$38 simple games, $45 medium, $55 Gloomhaven/heavy games",
+          "community_engagement": "post on BoardGameGeek forums and r/boardgames for organic reach"
+        },
+        "structural_requirements": "walls 1.8mm minimum for rigidity; base 1.5mm; no infill needed for thin-wall tray construction",
+        "avoid": [
+          "trays that don't stack to exact box height (lid won't close — returns guaranteed)",
+          "walls under 1.5mm (brittle, fingers will crack them)",
+          "missing finger notches on card trays (frustrating UX)",
+          "generic non-game-specific trays (defeats the whole keyword strategy)"
+        ],
+        "resemblance_goal": "premium laser-cut insert quality — similar to Folded Space or Broken Token products sold at $40–80 retail",
+        "commercial_differentiators": "game-specific listings target buyers already searching for exactly this product; BoardGameGeek community drives organic traffic; parametric per-game system creates hundreds of distinct SKUs; highest absolute profit per unit in entire portfolio"
+      },
+
+      "parametric_variables": [
+        {"name": "game_title", "type": "string", "drives": "box dimensions, component layout, listing title — primary SKU axis"},
+        {"name": "box_interior_length_mm", "type": "float_mm", "drives": "tray outer dimensions"},
+        {"name": "box_interior_width_mm", "type": "float_mm", "drives": "tray outer dimensions"},
+        {"name": "box_interior_depth_mm", "type": "float_mm", "drives": "total stack height constraint"},
+        {"name": "card_tray_count", "type": "integer", "drives": "number of card storage trays"},
+        {"name": "token_compartment_count", "type": "integer", "drives": "number of token divider cells"}
+      ],
+
+      "sku_expansion_strategy": "one CAD system parameterized per game title — each game is a unique listing with targeted keyword. Start with Wingspan, Catan, Ticket to Ride, Gloomhaven JotL. Expand by 2–3 titles per month. Potential for 200+ listings from one design system.",
+
+      "openscad_prompt": "Create a 3D-printable board game organizer tray in OpenSCAD for [game_title]. The tray is a rectangular open-top container [tray_length]mm × [tray_width]mm × [tray_height]mm with 1.8mm wall thickness, 1.5mm base, and 3mm exterior corner radius. Interior has [divider_count] dividers 1.5mm thick creating [compartment_count] compartments. Card tray variant: add a 25mm semicircle finger-access notch 10mm deep on one short end. All interior corners 2mm radius for easy cleaning. Base is solid flat. Stack height of all trays must equal [box_interior_depth_mm] minus 1mm tolerance. Print open-face up. No supports. Material: PLA, 0.2mm layer height, 2 perimeters, 15% gyroid infill on base only."
+    }
+
+  ]
+}
