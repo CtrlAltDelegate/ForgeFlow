@@ -3,6 +3,7 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom'
 const nav = [
   { to: '/', label: 'Dashboard' },
   { to: '/opportunities', label: 'Opportunities' },
+  { to: '/intake', label: 'Intake Queue' },
   { to: '/product/new', label: 'Product Detail', hide: true },
   { to: '/cad', label: 'CAD Generator' },
   { to: '/simulator', label: 'Manufacturing Simulator' },
