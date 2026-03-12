@@ -98,6 +98,7 @@ class Settings(BaseSettings):
     scad_dir: Path = Path("./data/scad")
     stl_dir: Path = Path("./data/stl")
     imports_dir: Path = Path("./data/imports")
+    intake_images_dir: Path = Path("./data/intake_images")
 
     # External tools
     openscad_path: str = "openscad"
