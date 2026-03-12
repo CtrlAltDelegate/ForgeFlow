@@ -100,6 +100,40 @@ export const api = {
     update: (productId: number, listingId: number, body: import('../types').ListingUpdate) =>
       request<import('../types').ListingResponse>(`/products/${productId}/listings/${listingId}`, { method: 'PATCH', body: JSON.stringify(body) }),
   },
+  intake: {
+    list: (params?: { skip?: number; limit?: number }) => {
+      const sp = new URLSearchParams()
+      if (params?.skip != null) sp.set('skip', String(params.skip))
+      if (params?.limit != null) sp.set('limit', String(params.limit))
+      const q = sp.toString()
+      return request<import('../types').IntakeListItem[]>(`/intake${q ? `?${q}` : ''}`)
+    },
+    get: (id: string) => request<import('../types').IntakeResponse>(`/intake/${id}`),
+    submit: (body: import('../types').IntakeSubmitRequest) =>
+      request<import('../types').IntakeSubmitResponse>('/intake/submit', { method: 'POST', body: JSON.stringify(body) }),
+    approve: (id: string, approvedBriefJson: Record<string, unknown>, reviewerNotes?: string) =>
+      request<import('../types').IntakeApproveResponse>(`/intake/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ approved_brief_json: approvedBriefJson, reviewer_notes: reviewerNotes || null }),
+      }),
+    reject: (id: string, rejectionReason: string) =>
+      request<{ intake_id: string; status: string }>(`/intake/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ rejection_reason: rejectionReason }),
+      }),
+    reEnrich: (id: string, reviewerNotes?: string) =>
+      request<{ intake_id: string; status: string }>(`/intake/${id}/re-enrich`, {
+        method: 'POST',
+        body: JSON.stringify({ reviewer_notes: reviewerNotes || null }),
+      }),
+    patchBriefField: (id: string, fieldName: string, fieldValue: unknown) =>
+      request<import('../types').IntakeResponse>(`/intake/${id}/brief`, {
+        method: 'PATCH',
+        body: JSON.stringify({ field_name: fieldName, field_value: fieldValue }),
+      }),
+    regeneratePrompt: (id: string) =>
+      request<import('../types').IntakeResponse>(`/intake/${id}/regenerate-prompt`, { method: 'POST' }),
+  },
   imports: {
     list: () => request<import('../types').ImportListItem[]>('/imports'),
     get: (id: number) => request<import('../types').ImportRecordResponse>(`/imports/${id}`),

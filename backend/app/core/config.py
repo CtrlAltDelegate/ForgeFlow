@@ -113,6 +113,10 @@ class Settings(BaseSettings):
     cad_llm_model: str = "claude-3-5-sonnet-20241022"
     cad_llm_provider: str = "anthropic"
 
+    # Intake pipeline AI models (share cad_llm_api_key for Anthropic access)
+    intake_vision_model: str = "claude-3-5-sonnet-20241022"  # vision + brief assembly
+    intake_text_model: str = "claude-haiku-4-5-20251001"      # text extraction (fast/cheap)
+
     # Default manufacturing assumptions
     default_material_cost_per_gram: float = 0.02
     default_platform_fee_percent: float = 6.5

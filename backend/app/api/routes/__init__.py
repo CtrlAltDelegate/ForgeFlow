@@ -6,6 +6,7 @@ from app.api.routes import (
     cad as cad_routes,
     simulation as simulation_routes,
     listings as listings_routes,
+    intake as intake_routes,
 )
 
 api_router = APIRouter()
@@ -17,3 +18,4 @@ api_router.include_router(simulation_routes.router, prefix="/products", tags=["s
 api_router.include_router(listings_routes.router, prefix="/products", tags=["listings"])
 api_router.include_router(products.router, prefix="/products", tags=["products"])
 api_router.include_router(imports_routes.router, prefix="/imports", tags=["imports"])
+api_router.include_router(intake_routes.router, prefix="/intake", tags=["intake"])

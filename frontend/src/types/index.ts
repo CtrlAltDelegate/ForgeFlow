@@ -256,3 +256,94 @@ export interface ListingUpdate {
   why_it_could_sell?: string | null
   differentiation_angle?: string | null
 }
+
+// ---------------------------------------------------------------------------
+// Intake pipeline
+// ---------------------------------------------------------------------------
+
+export type IntakeStatus =
+  | 'raw_collected'
+  | 'enriching'
+  | 'brief_drafted'
+  | 'brief_approved'
+  | 'rejected'
+  | 'cad_queued'
+
+export type TriggerMode = 'etsy_url' | 'erank_paste' | 'manual'
+
+export interface IntakeImageResponse {
+  id: string
+  intake_id: string
+  image_index: number | null
+  source_url: string | null
+  local_path: string
+  file_size_bytes: number | null
+  vision_analysis_json: Record<string, unknown> | null
+  created_at: string
+}
+
+export interface IntakeListItem {
+  id: string
+  status: IntakeStatus
+  trigger_mode: TriggerMode
+  raw_title: string | null
+  source_url: string | null
+  source_keyword: string | null
+  confidence_score: number | null
+  image_count: number
+  enrichment_attempt_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface IntakeResponse {
+  id: string
+  status: IntakeStatus
+  trigger_mode: TriggerMode
+  source_url: string | null
+  source_keyword: string | null
+  raw_title: string | null
+  raw_description: string | null
+  raw_tags: string[] | null
+  raw_price_usd: number | null
+  raw_review_count: number | null
+  raw_rating: number | null
+  image_count: number
+  visual_summary_json: Record<string, unknown> | null
+  text_extraction_json: Record<string, unknown> | null
+  draft_brief_json: Record<string, unknown> | null
+  approved_brief_json: Record<string, unknown> | null
+  confidence_score: number | null
+  confidence_detail_json: {
+    per_field: Record<string, number>
+    low_confidence_fields: string[]
+    warning_level: 'red' | 'yellow' | 'green'
+  } | null
+  enrichment_attempt_count: number
+  reviewer_notes: string | null
+  approved_by: string | null
+  approved_at: string | null
+  rejection_reason: string | null
+  product_id: number | null
+  cad_model_id: number | null
+  created_at: string
+  updated_at: string
+  images: IntakeImageResponse[]
+}
+
+export interface IntakeSubmitRequest {
+  trigger_mode: TriggerMode
+  source_url?: string | null
+  source_keyword?: string | null
+  raw_title?: string | null
+}
+
+export interface IntakeSubmitResponse {
+  intake_id: string
+  status: IntakeStatus
+}
+
+export interface IntakeApproveResponse {
+  product_id: number
+  cad_model_id: number
+}

@@ -9,6 +9,8 @@ import { ProductCreate } from './pages/ProductCreate'
 import { CadGenerator } from './pages/CadGenerator'
 import { ManufacturingSimulator } from './pages/ManufacturingSimulator'
 import { ListingStudio } from './pages/ListingStudio'
+import { IntakeQueue } from './pages/IntakeQueue'
+import { IntakeReview } from './pages/IntakeReview'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="simulator" element={<ManufacturingSimulator />} />
         <Route path="listings" element={<ListingStudio />} />
         <Route path="imports" element={<DataImports />} />
+        <Route path="intake" element={<IntakeQueue />} />
+        <Route path="intake/:id" element={<IntakeReview />} />
         <Route path="settings" element={<Placeholder />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
