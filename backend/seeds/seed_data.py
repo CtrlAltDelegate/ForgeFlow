@@ -1,5 +1,6 @@
-"""Seed demo data for ForgeFlow."""
+"""Seed real ForgeFlow top-10 product data, including design briefs for CAD generation."""
 import asyncio
+import json
 import sys
 from pathlib import Path
 
@@ -10,200 +11,279 @@ from sqlalchemy import select
 from app.core.database import AsyncSessionLocal, init_db
 from app.models import Product, ResearchData, OpportunityScore
 from app.models.product import ProductStatus, slugify
+from app.models.cad_model import CadModel
 
+# ---------------------------------------------------------------------------
+# Load design briefs from product_briefs.json (same directory as this script)
+# ---------------------------------------------------------------------------
+BRIEFS_PATH = Path(__file__).resolve().parent / "product_briefs.json"
+with open(BRIEFS_PATH, "r") as f:
+    _briefs_data = json.load(f)
 
+# Build a lookup dict keyed by product_id for fast access
+DESIGN_BRIEFS: dict[str, dict] = {
+    p["product_id"]: p for p in _briefs_data["products"]
+}
+
+# ---------------------------------------------------------------------------
+# Top 10 ForgeFlow products — real market data from Master Rankings (March 2026)
+# Scores are on a 0–100 scale:
+#   demand        — eRank search volume signal (higher = more buyers searching)
+#   competition   — inverse of seller density (higher = less competition = better)
+#   manufacturing — ease and cost of printing (higher = faster/cheaper)
+#   margin        — profit margin attractiveness
+#   differentiation — parametric SKU expansion potential
+# ---------------------------------------------------------------------------
 DEMO_PRODUCTS = [
     {
-        "name": "Desk Cable Organizer Clip",
+        "product_id": "usb_cable_desk_organizer",
+        "name": "USB / Cable Desk Organizer",
         "category": "cable organizers",
-        "source": "seed",
+        "source": "forgescore",
         "source_keyword": "desk cable management",
+        "phase": "launch_month_1",
         "research": {
-            "listed_price": 12.99,
+            "listed_price": 16.00,
             "review_count": 2847,
-            "rating": 4.3,
+            "rating": 4.4,
             "estimated_sales": 850,
-            "competitor_count": 45,
-            "listing_count": 120,
+            "competitor_count": 85,
+            "listing_count": 200,
             "listing_age_days": 180,
         },
-        "scores": {"demand": 78, "competition": 52, "manufacturing": 88, "margin": 72, "differentiation": 65},
-    },
-    {
-        "name": "Vacuum Hose Adapter 1.25 to 2.5",
-        "category": "vacuum adapters",
-        "source": "seed",
-        "source_keyword": "vacuum adapter",
-        "research": {
-            "listed_price": 8.99,
-            "review_count": 1523,
-            "rating": 4.5,
-            "estimated_sales": 420,
-            "competitor_count": 18,
-            "listing_count": 35,
-            "listing_age_days": 90,
+        # demand 1488 | margin 35.8% | parametric 5/5 | 168 units/mo
+        "scores": {
+            "demand": 78,
+            "competition": 42,
+            "manufacturing": 95,
+            "margin": 75,
+            "differentiation": 85,
         },
-        "scores": {"demand": 72, "competition": 68, "manufacturing": 92, "margin": 80, "differentiation": 70},
     },
     {
-        "name": "Pegboard Tool Holder",
-        "category": "pegboard mounts",
-        "source": "seed",
-        "source_keyword": "pegboard organizer",
+        "product_id": "universal_headset_wall_mount",
+        "name": "Universal Headset Wall Mount",
+        "category": "gaming accessories",
+        "source": "forgescore",
+        "source_keyword": "headset wall mount",
+        "phase": "launch_month_1",
         "research": {
-            "listed_price": 14.99,
-            "review_count": 892,
-            "rating": 4.1,
-            "estimated_sales": 280,
-            "competitor_count": 62,
-            "listing_count": 95,
-            "listing_age_days": 365,
-        },
-        "scores": {"demand": 65, "competition": 45, "manufacturing": 85, "margin": 68, "differentiation": 58},
-    },
-    {
-        "name": "Monitor Riser with Cable Cutout",
-        "category": "desk accessories",
-        "source": "seed",
-        "source_keyword": "monitor stand",
-        "research": {
-            "listed_price": 24.99,
-            "review_count": 3421,
-            "rating": 4.4,
+            "listed_price": 20.00,
+            "review_count": 1245,
+            "rating": 4.6,
             "estimated_sales": 620,
-            "competitor_count": 88,
-            "listing_count": 200,
+            "competitor_count": 55,
+            "listing_count": 130,
             "listing_age_days": 120,
         },
-        "scores": {"demand": 82, "competition": 38, "manufacturing": 75, "margin": 65, "differentiation": 72},
-    },
-    {
-        "name": "Controller Wall Mount",
-        "category": "gaming accessories",
-        "source": "seed",
-        "source_keyword": "game controller holder",
-        "research": {
-            "listed_price": 11.99,
-            "review_count": 567,
-            "rating": 4.6,
-            "estimated_sales": 190,
-            "competitor_count": 22,
-            "listing_count": 40,
-            "listing_age_days": 60,
+        # demand 2058 (highest of all 14) | margin 26–34% | parametric 3/5
+        "scores": {
+            "demand": 92,
+            "competition": 55,
+            "manufacturing": 82,
+            "margin": 68,
+            "differentiation": 72,
         },
-        "scores": {"demand": 68, "competition": 72, "manufacturing": 90, "margin": 78, "differentiation": 75},
     },
     {
-        "name": "Dishwasher Rack Clip Replacement",
-        "category": "appliance replacement parts",
-        "source": "seed",
-        "source_keyword": "dishwasher rack clip",
+        "product_id": "french_cleat_tool_holder_series",
+        "name": "French Cleat Tool Holder Series",
+        "category": "workshop storage",
+        "source": "forgescore",
+        "source_keyword": "french cleat tool holder",
+        "phase": "launch_month_2",
         "research": {
-            "listed_price": 9.99,
-            "review_count": 2103,
-            "rating": 4.2,
-            "estimated_sales": 510,
-            "competitor_count": 12,
-            "listing_count": 28,
+            "listed_price": 20.50,
+            "review_count": 892,
+            "rating": 4.5,
+            "estimated_sales": 480,
+            "competitor_count": 38,
+            "listing_count": 85,
+            "listing_age_days": 210,
+        },
+        # demand 1470 | margin 33.2% | parametric 5/5 | 36+ SKUs from one file
+        "scores": {
+            "demand": 76,
+            "competition": 72,
+            "manufacturing": 80,
+            "margin": 78,
+            "differentiation": 95,
+        },
+    },
+    {
+        "product_id": "controller_stand_universal",
+        "name": "Controller Stand (PS5 / Xbox / Switch)",
+        "category": "gaming accessories",
+        "source": "forgescore",
+        "source_keyword": "ps5 controller stand",
+        "phase": "launch_month_2",
+        "research": {
+            "listed_price": 23.00,
+            "review_count": 3200,
+            "rating": 4.4,
+            "estimated_sales": 740,
+            "competitor_count": 120,
+            "listing_count": 380,
+            "listing_age_days": 90,
+        },
+        # demand 1680 | margin 30.1% | parametric 4/5 | 3000+ active listings = proven market
+        "scores": {
+            "demand": 84,
+            "competition": 38,
+            "manufacturing": 82,
+            "margin": 72,
+            "differentiation": 82,
+        },
+    },
+    {
+        "product_id": "compact_cable_organizer_clips",
+        "name": "Compact Cable Organizer / Clips",
+        "category": "cable organizers",
+        "source": "forgescore",
+        "source_keyword": "cable management clips desk",
+        "phase": "launch_month_1",
+        "research": {
+            "listed_price": 15.00,
+            "review_count": 1580,
+            "rating": 4.3,
+            "estimated_sales": 950,
+            "competitor_count": 72,
+            "listing_count": 165,
+            "listing_age_days": 140,
+        },
+        # demand 980 | margin 33.7% | parametric 4/5 | 192 units/mo = highest throughput
+        "scores": {
+            "demand": 65,
+            "competition": 48,
+            "manufacturing": 98,
+            "margin": 76,
+            "differentiation": 80,
+        },
+    },
+    {
+        "product_id": "plant_propagation_station",
+        "name": "Plant Propagation Station",
+        "category": "home decor",
+        "source": "forgescore",
+        "source_keyword": "plant propagation station 3d printed",
+        "phase": "month_3",
+        "research": {
+            "listed_price": 23.00,
+            "review_count": 756,
+            "rating": 4.7,
+            "estimated_sales": 420,
+            "competitor_count": 48,
+            "listing_count": 110,
+            "listing_age_days": 95,
+        },
+        # demand 1100 | margin 31.5% | parametric 3/5 | 4-pack bundle = best AOV play
+        "scores": {
+            "demand": 68,
+            "competition": 62,
+            "manufacturing": 85,
+            "margin": 74,
+            "differentiation": 72,
+        },
+    },
+    {
+        "product_id": "under_shelf_drill_impact_holder",
+        "name": "Under-Shelf Drill / Impact Holder",
+        "category": "workshop storage",
+        "source": "forgescore",
+        "source_keyword": "under shelf drill holder",
+        "phase": "month_3",
+        "research": {
+            "listed_price": 21.00,
+            "review_count": 445,
+            "rating": 4.5,
+            "estimated_sales": 310,
+            "competitor_count": 32,
+            "listing_count": 68,
+            "listing_age_days": 160,
+        },
+        # demand 1225 | margin 34.9% (highest of workshop tools) | parametric 4/5
+        "scores": {
+            "demand": 72,
+            "competition": 70,
+            "manufacturing": 78,
+            "margin": 82,
+            "differentiation": 80,
+        },
+    },
+    {
+        "product_id": "gridfinity_drawer_organizer_kit",
+        "name": "Gridfinity Drawer Organizer Kit",
+        "category": "storage organizers",
+        "source": "forgescore",
+        "source_keyword": "gridfinity drawer organizer",
+        "phase": "month_3",
+        "research": {
+            "listed_price": 31.50,
+            "review_count": 2100,
+            "rating": 4.6,
+            "estimated_sales": 380,
+            "competitor_count": 65,
+            "listing_count": 145,
             "listing_age_days": 200,
         },
-        "scores": {"demand": 85, "competition": 82, "manufacturing": 88, "margin": 85, "differentiation": 60},
-    },
-    {
-        "name": "USB Hub Desk Mount Bracket",
-        "category": "desk accessories",
-        "source": "seed",
-        "source_keyword": "usb hub mount",
-        "research": {
-            "listed_price": 15.99,
-            "review_count": 434,
-            "rating": 4.0,
-            "estimated_sales": 140,
-            "competitor_count": 28,
-            "listing_count": 55,
-            "listing_age_days": 45,
+        # demand 1715 | margin 25.5% | parametric 5/5 | Gridfinity community = built-in traffic
+        "scores": {
+            "demand": 85,
+            "competition": 45,
+            "manufacturing": 72,
+            "margin": 62,
+            "differentiation": 95,
         },
-        "scores": {"demand": 58, "competition": 62, "manufacturing": 82, "margin": 70, "differentiation": 68},
     },
     {
-        "name": "Headphone Stand with Base",
-        "category": "desk accessories",
-        "source": "seed",
-        "source_keyword": "headphone stand",
+        "product_id": "dual_controller_headset_stand",
+        "name": "Dual Controller + Headset Stand",
+        "category": "gaming accessories",
+        "source": "forgescore",
+        "source_keyword": "dual controller headset stand",
+        "phase": "month_4",
         "research": {
-            "listed_price": 18.99,
-            "review_count": 1892,
+            "listed_price": 33.00,
+            "review_count": 620,
             "rating": 4.5,
-            "estimated_sales": 380,
-            "competitor_count": 55,
-            "listing_count": 110,
-            "listing_age_days": 150,
-        },
-        "scores": {"demand": 75, "competition": 48, "manufacturing": 80, "margin": 72, "differentiation": 65},
-    },
-    {
-        "name": "Router Shelf Bracket",
-        "category": "mounts",
-        "source": "seed",
-        "source_keyword": "router shelf",
-        "research": {
-            "listed_price": 13.99,
-            "review_count": 756,
-            "rating": 4.3,
-            "estimated_sales": 220,
-            "competitor_count": 35,
-            "listing_count": 68,
-            "listing_age_days": 100,
-        },
-        "scores": {"demand": 70, "competition": 58, "manufacturing": 86, "margin": 74, "differentiation": 62},
-    },
-    {
-        "name": "Drawer Divider Tray",
-        "category": "organizers",
-        "source": "seed",
-        "source_keyword": "drawer organizer",
-        "research": {
-            "listed_price": 10.99,
-            "review_count": 3201,
-            "rating": 4.2,
-            "estimated_sales": 720,
-            "competitor_count": 95,
-            "listing_count": 180,
-            "listing_age_days": 220,
-        },
-        "scores": {"demand": 80, "competition": 35, "manufacturing": 78, "margin": 62, "differentiation": 55},
-    },
-    {
-        "name": "GoPro Camera Mount Adapter",
-        "category": "adapters",
-        "source": "seed",
-        "source_keyword": "gopro mount",
-        "research": {
-            "listed_price": 7.99,
-            "review_count": 987,
-            "rating": 4.4,
-            "estimated_sales": 310,
+            "estimated_sales": 280,
             "competitor_count": 42,
-            "listing_count": 75,
-            "listing_age_days": 80,
+            "listing_count": 90,
+            "listing_age_days": 75,
         },
-        "scores": {"demand": 72, "competition": 55, "manufacturing": 92, "margin": 82, "differentiation": 70},
+        # demand 1340 | margin 32.9% | $10.53/unit = highest profit in gaming category
+        "scores": {
+            "demand": 74,
+            "competition": 60,
+            "manufacturing": 70,
+            "margin": 76,
+            "differentiation": 70,
+        },
     },
     {
-        "name": "Spice Jar Lid Spacer",
-        "category": "organizers",
-        "source": "seed",
-        "source_keyword": "spice rack",
+        "product_id": "board_game_organizer_insert",
+        "name": "Board Game Organizer Insert",
+        "category": "gaming accessories",
+        "source": "forgescore",
+        "source_keyword": "wingspan board game insert 3d printed",
+        "phase": "phase_2",
         "research": {
-            "listed_price": 6.99,
-            "review_count": 445,
-            "rating": 4.1,
-            "estimated_sales": 165,
-            "competitor_count": 25,
-            "listing_count": 48,
-            "listing_age_days": 130,
+            "listed_price": 46.50,
+            "review_count": 890,
+            "rating": 4.8,
+            "estimated_sales": 185,
+            "competitor_count": 28,
+            "listing_count": 60,
+            "listing_age_days": 180,
         },
-        "scores": {"demand": 62, "competition": 65, "manufacturing": 95, "margin": 88, "differentiation": 58},
+        # demand 1200 | margin 25.5% | $13.17/unit = highest absolute profit | parametric 5/5
+        "scores": {
+            "demand": 70,
+            "competition": 65,
+            "manufacturing": 55,
+            "margin": 62,
+            "differentiation": 95,
+        },
     },
 ]
 
@@ -227,9 +307,14 @@ async def run_seed():
             print("Database already has products. Skip seeding or delete data first.")
             return
 
+        seeded_products = 0
+        seeded_briefs = 0
+
         for i, data in enumerate(DEMO_PRODUCTS):
+            # ------------------------------------------------------------------
+            # 1. Product record
+            # ------------------------------------------------------------------
             slug = slugify(data["name"])
-            # Ensure unique slug
             check = await db.execute(select(Product).where(Product.slug == slug))
             if check.scalar_one_or_none():
                 slug = f"{slug}-{i}"
@@ -243,12 +328,15 @@ async def run_seed():
                 status=ProductStatus.SCORED,
             )
             db.add(product)
-            await db.flush()
+            await db.flush()  # get product.id before creating children
 
+            # ------------------------------------------------------------------
+            # 2. Research data record
+            # ------------------------------------------------------------------
             r = data["research"]
             research = ResearchData(
                 product_id=product.id,
-                source_type="seed",
+                source_type="forgescore",
                 keyword=data.get("source_keyword"),
                 listed_price=r.get("listed_price"),
                 review_count=r.get("review_count"),
@@ -260,6 +348,9 @@ async def run_seed():
             )
             db.add(research)
 
+            # ------------------------------------------------------------------
+            # 3. Opportunity score record
+            # ------------------------------------------------------------------
             s = data["scores"]
             total = weighted_total(s)
             score = OpportunityScore(
@@ -270,12 +361,47 @@ async def run_seed():
                 margin_score=s["margin"],
                 differentiation_score=s["differentiation"],
                 total_score=round(total, 1),
-                scoring_notes="Seeded demo data",
+                scoring_notes=f"ForgeFlow Master Rankings March 2026 — Phase: {data.get('phase', 'unknown')}",
             )
             db.add(score)
+            seeded_products += 1
+
+            # ------------------------------------------------------------------
+            # 4. CadModel record — pre-load design brief into parameters_json
+            #    scad_code is null here; the CAD generation pipeline populates it
+            #    by reading parameters_json and passing openscad_prompt to Claude
+            # ------------------------------------------------------------------
+            product_id_key = data.get("product_id")
+            brief = DESIGN_BRIEFS.get(product_id_key)
+
+            if brief:
+                # Store the full brief so the CAD generation step has everything:
+                # geometry, dimensions, parametric variables, avoid list, and
+                # the ready-to-use openscad_prompt field.
+                cad_model = CadModel(
+                    product_id=product.id,
+                    version=1,
+                    model_type="parametric_brief",
+                    parameters_json=json.dumps(brief, indent=2),
+                    scad_code=None,          # populated by CAD generation pipeline
+                    scad_file_path=None,     # populated after generation
+                    stl_file_path=None,      # populated after slicing
+                    generation_method="brief_pending",  # updated to "claude" after generation
+                )
+                db.add(cad_model)
+                seeded_briefs += 1
+            else:
+                print(f"  WARNING: No design brief found for product_id '{product_id_key}' — CadModel not created")
 
         await db.commit()
-        print(f"Seeded {len(DEMO_PRODUCTS)} products with research and opportunity scores.")
+        print(f"Seeded {seeded_products} products with research data and opportunity scores.")
+        print(f"Seeded {seeded_briefs} CadModel records with design briefs loaded into parameters_json.")
+        print()
+        print("Next step: run the CAD generation pipeline.")
+        print("  For each CadModel where generation_method='brief_pending':")
+        print("  1. Read parameters_json -> extract ['design_brief']['openscad_prompt']")
+        print("  2. Pass openscad_prompt to Claude for OpenSCAD generation")
+        print("  3. Write result to scad_code, update generation_method to 'claude'")
 
 
 if __name__ == "__main__":
