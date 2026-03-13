@@ -110,11 +110,11 @@ class Settings(BaseSettings):
     listing_llm_model: str = "gpt-4o-mini"
     listing_llm_provider: str = "openai"
     cad_llm_api_key: str = ""
-    cad_llm_model: str = "claude-3-5-sonnet-20241022"
+    cad_llm_model: str = "claude-sonnet-4-6"  # was claude-3-5-sonnet-20241022 (deprecated, 404)
     cad_llm_provider: str = "anthropic"
 
     # Intake pipeline AI models (share cad_llm_api_key for Anthropic access)
-    intake_vision_model: str = "claude-3-5-sonnet-20241022"  # vision + brief assembly
+    intake_vision_model: str = "claude-sonnet-4-6"  # vision + brief assembly (was claude-3-5-sonnet-20241022)
     intake_text_model: str = "claude-haiku-4-5-20251001"      # text extraction (fast/cheap)
 
     # Default manufacturing assumptions
