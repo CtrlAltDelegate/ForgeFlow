@@ -8,6 +8,8 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ## Local setup
 
+**One-afternoon checklist:** To unlock the full AI pipeline (API keys, OpenSCAD), see [SETUP.md](SETUP.md).
+
 ### Prerequisites
 
 - **Node.js** 18+ (for frontend)
