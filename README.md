@@ -132,8 +132,8 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 | `FORGEFLOW_DEFAULT_PLATFORM_FEE_PERCENT` | `6.5` | Used in margin scoring. |
 | `FORGEFLOW_DEFAULT_SHIPPING_ESTIMATE` | `4.0` | Used in margin scoring. |
 | `FORGEFLOW_LISTING_LLM_API_KEY` | *(empty)* | API key for listing/review LLM (optional). |
-| `FORGEFLOW_LISTING_LLM_MODEL` | `gpt-4o-mini` | Model for listing/review (e.g. OpenAI). |
-| `FORGEFLOW_LISTING_LLM_PROVIDER` | `openai` | Provider: `openai`, `anthropic`, etc. |
+| `FORGEFLOW_LISTING_LLM_MODEL` | `gpt-4o-mini` | Model for listing/review. Use `gpt-4o-mini` (OpenAI) or `claude-3-5-haiku` / `claude-haiku-4-5-20251001` (Anthropic). |
+| `FORGEFLOW_LISTING_LLM_PROVIDER` | `openai` | Provider: `openai` or `anthropic`. Listing generation uses this when the API key is set. |
 | `FORGEFLOW_CAD_LLM_API_KEY` | *(empty)* | API key for CAD-generation LLM (optional). |
 | `FORGEFLOW_CAD_LLM_MODEL` | `gpt-4o` | Model for CAD/code generation. |
 | `FORGEFLOW_CAD_LLM_PROVIDER` | `openai` | Provider for CAD phase. |
@@ -147,11 +147,9 @@ Create a `.env` file in `backend/` to override (e.g. `FORGEFLOW_OPENSCAD_PATH=/u
 ForgeFlow is designed to use **two LLM “phases”** with separate API keys and model choices:
 
 1. **Listing / review (simpler LLM)**  
-   Use a **faster, cheaper** model for:
-   - Review summarization and listing copy (title, bullets, description, tags).
-   - Optional: extracting structured product data from PDF or freeform text.
+   Use a **faster, cheaper** model for listing copy (title, bullets, description, tags). Supported providers: **OpenAI** and **Anthropic**.
 
-   **Suggestions:** OpenAI `gpt-4o-mini`, Anthropic `claude-3-haiku`, or Google `gemini-1.5-flash`. One API key (e.g. `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`) is enough; set `FORGEFLOW_LISTING_LLM_API_KEY` and `FORGEFLOW_LISTING_LLM_MODEL` (and provider if you add provider-specific code).
+   **Suggested models:** `gpt-4o-mini` (OpenAI, default) or `claude-3-5-haiku` / `claude-haiku-4-5-20251001` (Anthropic). Set `FORGEFLOW_LISTING_LLM_API_KEY`, `FORGEFLOW_LISTING_LLM_PROVIDER` (`openai` or `anthropic`), and `FORGEFLOW_LISTING_LLM_MODEL`. Listing Studio uses the LLM when the key and provider are set; otherwise it uses templates.
 
 2. **CAD generation (more capable LLM)**  
    Use a **more capable** model for:
@@ -160,7 +158,7 @@ ForgeFlow is designed to use **two LLM “phases”** with separate API keys and
 
    **Suggestions:** OpenAI `gpt-4o`, Anthropic `claude-3-5-sonnet`, or Google `gemini-1.5-pro`. Set `FORGEFLOW_CAD_LLM_API_KEY` and `FORGEFLOW_CAD_LLM_MODEL`. You can use the same provider as listing with a different model, or a different provider.
 
-**Current behavior:** Without these keys set, listing stays **template-based** and CAD stays **template + manual parameters**. The config and wiring are in place so you can plug in calls to your chosen provider when ready (e.g. in `listing_service.py` and `cad_service.py`).
+**Current behavior:** Without these keys set, listing stays **template-based** and CAD stays **template + manual parameters**. With keys set, listing supports OpenAI and Anthropic; CAD supports Anthropic.
 
 ---
 
