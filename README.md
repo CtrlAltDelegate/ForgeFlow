@@ -45,7 +45,7 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
    From the `backend` directory. If the database already has products, the script skips seeding.
 
-4. **OpenSCAD path** (optional): set `FORGEFLOW_OPENSCAD_PATH` or configure in Settings once that page is wired. Default is `openscad` on PATH.
+4. **OpenSCAD (STL export, optional):** Used only for **Export STL** and **Download STL** on the CAD page. Default is `openscad` (must be on your system PATH). If OpenSCAD is not on PATH, set **`FORGEFLOW_OPENSCAD_PATH`** in `backend/.env` to the full executable path (e.g. Windows: `C:\Program Files\OpenSCAD\openscad.exe`; macOS/Linux: `/usr/bin/openscad` or leave unset if `openscad` is on PATH). **Verify:** run `openscad --version` in a terminal (or your full path, e.g. `"C:\Program Files\OpenSCAD\openscad.exe" --version` on Windows). CAD generation and .scad saving work without OpenSCAD; only STL export needs it.
 
 ### Frontend
 
@@ -125,7 +125,7 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FORGEFLOW_DATABASE_URL` | *(not set — SQLite at backend/forgeflow.db)* | Leave unset for local use (SQLite default). Set only for a custom SQLite path or a Postgres URL (e.g. in production). |
-| `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. |
+| `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. Omit if `openscad` is on PATH. Verify with `openscad --version` (or the full path on Windows). |
 | `FORGEFLOW_DEBUG` | `false` | Enable SQL echo and debug. |
 | `FORGEFLOW_CORS_ORIGINS` | (includes localhost + Netlify) | Comma-separated origins for CORS. |
 | `FORGEFLOW_DEFAULT_MATERIAL_COST_PER_GRAM` | `0.02` | Used for simulation cost and scoring. |
@@ -166,7 +166,8 @@ ForgeFlow is designed to use **two LLM “phases”** with separate API keys and
 
 - **Dashboard / API shows nothing or errors**: Ensure the backend is running (`uvicorn app.main:app --reload` from `backend/`) and the frontend proxy targets `http://127.0.0.1:8000`. Run the seed script if the DB is empty: `python seeds/seed_data.py`.
 - **“OpenSCAD not found” when exporting STL**:
-  - **Running locally (Windows):** Install [OpenSCAD](https://openscad.org/) and set `FORGEFLOW_OPENSCAD_PATH=C:\Program Files\OpenSCAD\openscad.exe` in `backend/.env`. Start the server from the `backend` folder so it loads `.env`.
+  - **Verify OpenSCAD:** In a terminal, run `openscad --version` (or on Windows `"C:\Program Files\OpenSCAD\openscad.exe" --version`). If that fails, install [OpenSCAD](https://openscad.org/) or add it to your PATH.
+  - **Running locally (Windows):** Set `FORGEFLOW_OPENSCAD_PATH=C:\Program Files\OpenSCAD\openscad.exe` in `backend/.env`. Start the server from the `backend` folder so it loads `.env`.
   - **Running in a container (Docker / Render / Railway / etc.):** The container does not use your PC’s `.env` or Windows paths. Use the repo’s `backend/Dockerfile`, which installs OpenSCAD inside the image so STL export works. Set `FORGEFLOW_OPENSCAD_PATH=openscad` (or `/usr/bin/openscad`) in the **deployment** environment if your platform doesn’t pick it up.
 - **CSV import fails**: Ensure the file has `name` and `category` columns. Download the template from Data Imports and match the header names (case-insensitive, spaces normalized to underscores).
 - **Product not found (404)**: The product may have been deleted, or the slug/ID in the URL is wrong. Use the Opportunities list to open products by name.
