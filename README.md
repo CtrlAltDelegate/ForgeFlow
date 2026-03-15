@@ -61,9 +61,10 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 ### Database
 
-- **MVP**: SQLite. The database file is always created at `backend/forgeflow.db` (absolute path), so your imports and products persist no matter which folder you start the server from.
+- **Default: SQLite.** No database env vars are required for local use. The app uses `backend/forgeflow.db` (absolute path), so your data persists no matter which folder you start the server from.
 - Schema is created on first run via `init_db()`. To reset, delete `backend/forgeflow.db` and restart the API, then re-run the seed script.
-- Override the location with `FORGEFLOW_DATABASE_URL` in `.env` if needed.
+- **When to switch to Postgres:** Use Postgres when deploying to a platform (e.g. Railway) that provides it, or if you explicitly want a shared/remote DB. Set `DATABASE_URL` (or the platform’s Postgres vars) in the deploy environment; see [Deploy → Backend (Railway)](#backend-railway). For local single-user use, SQLite is the right choice.
+- To use a different SQLite path locally, set `FORGEFLOW_DATABASE_URL` in `backend/.env`.
 
 ### Import file types (Data Imports)
 
@@ -123,7 +124,7 @@ The MVP simulates the “brain” of an AI-assisted micro-manufacturing business
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FORGEFLOW_DATABASE_URL` | *(absolute path to backend/forgeflow.db)* | Database URL. Default uses backend folder so data persists; override for Postgres in production. |
+| `FORGEFLOW_DATABASE_URL` | *(not set — SQLite at backend/forgeflow.db)* | Leave unset for local use (SQLite default). Set only for a custom SQLite path or a Postgres URL (e.g. in production). |
 | `FORGEFLOW_OPENSCAD_PATH` | `openscad` | Path to OpenSCAD executable for STL export. |
 | `FORGEFLOW_DEBUG` | `false` | Enable SQL echo and debug. |
 | `FORGEFLOW_CORS_ORIGINS` | (includes localhost + Netlify) | Comma-separated origins for CORS. |

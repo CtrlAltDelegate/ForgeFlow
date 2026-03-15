@@ -1,6 +1,8 @@
 # One-afternoon setup: full AI pipeline
 
-ForgeFlow runs out of the box with templates and manual CAD parameters. To unlock the **full AI-driven pipeline** (Claude for CAD, LLM for listing copy), work through this checklist. SQLite is fine for local use; Postgres is only needed for cloud deploys.
+ForgeFlow runs out of the box with templates and manual CAD parameters. To unlock the **full AI-driven pipeline** (Claude for CAD, LLM for listing copy), work through this checklist.
+
+**Database:** Local runs use **SQLite by default** — no database env vars needed. Postgres is only for cloud deploys (e.g. Railway).
 
 | Step | What to do |
 |------|------------|
